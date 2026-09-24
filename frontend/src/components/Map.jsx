@@ -15,9 +15,9 @@ function createZoneIcon(zone) {
   if (isCritical) {
     html = `
       <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer">
-        <div class="absolute w-20 h-20 rounded-full bg-red-500/25 animate-ping"></div>
-        <div class="absolute w-12 h-12 rounded-full bg-red-500/40 animate-pulse"></div>
-        <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shadow-[0_0_20px_rgba(255,100,100,0.8)] border-2 border-white text-white">
+        <div class="absolute w-16 h-16 rounded-full bg-red-500/25 animate-ping"></div>
+        <div class="absolute w-10 h-10 rounded-full bg-red-500/40 animate-pulse"></div>
+        <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shadow-lg border-2 border-white text-white">
           <span class="material-symbols-outlined text-[16px]">priority_high</span>
         </div>
       </div>
@@ -25,7 +25,7 @@ function createZoneIcon(zone) {
   } else if (isHigh || isMedium) {
     html = `
       <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer">
-        <div class="w-6 h-6 rounded-full bg-cyan-400 flex items-center justify-center shadow-[0_0_12px_rgba(76,215,246,0.8)] border-2 border-white">
+        <div class="w-6 h-6 rounded-full bg-cyan-400 flex items-center justify-center shadow-md border-2 border-white">
           <span class="w-2 h-2 rounded-full bg-slate-900"></span>
         </div>
       </div>
@@ -33,7 +33,7 @@ function createZoneIcon(zone) {
   } else {
     html = `
       <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer">
-        <div class="w-5 h-5 rounded-full bg-emerald-400 flex items-center justify-center shadow-[0_0_8px_rgba(78,222,163,0.8)] border border-white">
+        <div class="w-5 h-5 rounded-full bg-emerald-400 flex items-center justify-center shadow-sm border border-white">
           <span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span>
         </div>
       </div>
@@ -66,23 +66,23 @@ function MapController({ center, zoom, theme }) {
 function MapZoomButtons() {
   const map = useMap();
   return (
-    <div className="flex items-center bg-surface-container-high/90 backdrop-blur-md rounded-lg overflow-hidden border border-outline-variant/20 shadow-md">
+    <div className="flex items-center bg-surface-container-high/95 backdrop-blur-md rounded-xl overflow-hidden border border-outline-variant/30 shadow-md">
       <button
-        className="p-1.5 hover:bg-surface-bright text-on-surface transition-colors cursor-pointer"
+        className="p-2 hover:bg-surface-bright text-on-surface transition-colors cursor-pointer"
         type="button"
         onClick={() => map.zoomIn()}
         title="Zoom In"
       >
-        <span className="material-symbols-outlined text-[16px]">add</span>
+        <span className="material-symbols-outlined text-[18px]">add</span>
       </button>
-      <div className="w-[1px] h-4 bg-surface-container"></div>
+      <div className="w-[1px] h-4 bg-outline-variant/30"></div>
       <button
-        className="p-1.5 hover:bg-surface-bright text-on-surface transition-colors cursor-pointer"
+        className="p-2 hover:bg-surface-bright text-on-surface transition-colors cursor-pointer"
         type="button"
         onClick={() => map.zoomOut()}
         title="Zoom Out"
       >
-        <span className="material-symbols-outlined text-[16px]">remove</span>
+        <span className="material-symbols-outlined text-[18px]">remove</span>
       </button>
     </div>
   );
@@ -105,10 +105,10 @@ export default function Map({
       severity: 'CRITICAL',
       severity_score: 0.86,
       confidence: 0.92,
-      summary: 'Severe Congestion 88% • Heavy Rain 78mm/h • 14 Flooding Reports',
+      summary: 'Severe Congestion 88% • Heavy Rain 82.5mm/h • 19 Flooding Reports',
       speed: '4.2 km/h',
-      rain: '78.4 mm/h',
-      reports: 14,
+      rain: '82.5 mm/h',
+      reports: 19,
       layer: 'all',
     },
     {
@@ -120,7 +120,7 @@ export default function Map({
       severity_score: 0.54,
       confidence: 0.85,
       summary: 'Moderate Traffic (54%) • Rain 12 mm/h',
-      speed: '28 km/h',
+      speed: '32 km/h',
       rain: '12.0 mm/h',
       reports: 2,
       layer: 'traffic',
@@ -133,7 +133,7 @@ export default function Map({
       severity: 'LOW',
       severity_score: 0.12,
       confidence: 0.95,
-      summary: 'Smooth Flow (12%) • Normal operations',
+      summary: 'Smooth Flow • Normal baseline',
       speed: '48 km/h',
       rain: '2.0 mm/h',
       reports: 0,
@@ -163,69 +163,68 @@ export default function Map({
     return true;
   });
 
-  // Clean OpenStreetMap tiles without API key requirements or watermarks
   const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
 
   return (
-    <div className="w-full h-[640px] bg-surface-container-lowest rounded-xl border border-outline-variant/30 overflow-hidden relative shadow-xl flex flex-col justify-between p-space-md">
-      {/* Map Control Floating Bar */}
-      <div className="relative z-[500] flex flex-wrap items-center justify-between gap-space-sm pointer-events-auto">
-        <div className="flex items-center gap-1 bg-surface-container-high/90 backdrop-blur-md p-1 rounded-lg shadow-md border border-outline-variant/20">
+    <div className="w-full h-[480px] md:h-[540px] bg-surface-container-lowest rounded-2xl border border-outline-variant/30 overflow-hidden relative shadow-md flex flex-col justify-between p-4">
+      {/* Top Floating Control Bar */}
+      <div className="relative z-[500] flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
+        {/* Simple Layer Controls: [All] [Rain] [Traffic] [Civic] */}
+        <div className="flex items-center gap-1 bg-surface-container-high/95 backdrop-blur-md p-1 rounded-xl shadow-md border border-outline-variant/25">
           <button
             type="button"
             onClick={() => setActiveFilter('all')}
-            className={`px-space-md py-1.5 rounded-md font-body-sm text-body-sm font-bold shadow-sm transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
               activeFilter === 'all'
-                ? 'bg-primary text-on-primary'
+                ? 'bg-primary text-on-primary shadow-sm'
                 : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
             }`}
           >
-            All Layers
+            All
           </button>
           <button
             type="button"
             onClick={() => setActiveFilter('rain')}
-            className={`px-space-md py-1.5 rounded-md font-body-sm text-body-sm transition-colors flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeFilter === 'rain'
-                ? 'bg-primary text-on-primary font-bold'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                ? 'bg-primary text-on-primary font-bold shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-medium'
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-primary"></span>
-            <span>Rainfall</span>
+            <span>Rain</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveFilter('traffic')}
-            className={`px-space-md py-1.5 rounded-md font-body-sm text-body-sm transition-colors flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeFilter === 'traffic'
-                ? 'bg-primary text-on-primary font-bold'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                ? 'bg-primary text-on-primary font-bold shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-medium'
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-error"></span>
-            <span>Traffic Flow</span>
+            <span>Traffic</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveFilter('civic')}
-            className={`px-space-md py-1.5 rounded-md font-body-sm text-body-sm transition-colors flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeFilter === 'civic'
-                ? 'bg-primary text-on-primary font-bold'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                ? 'bg-primary text-on-primary font-bold shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-medium'
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-secondary"></span>
-            <span>Civic 311</span>
+            <span>Civic</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-space-xs">
-          <div className="bg-surface-container-high/90 backdrop-blur-md px-space-md py-1.5 rounded-lg font-body-sm text-body-sm text-on-surface flex items-center gap-2 border border-outline-variant/20 shadow-md">
-            <span className="material-symbols-outlined text-[16px] text-primary">location_on</span>
-            <span className="font-medium">South Delhi Sector</span>
-          </div>
+        {/* Location Tag */}
+        <div className="hidden sm:flex items-center gap-1.5 bg-surface-container-high/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-semibold text-on-surface border border-outline-variant/25 shadow-md">
+          <span className="material-symbols-outlined text-[16px] text-primary">location_on</span>
+          <span>Delhi NCR Urban Grid</span>
         </div>
       </div>
 
@@ -245,7 +244,7 @@ export default function Map({
           <MapController center={DEFAULT_CENTER} zoom={13} theme={theme} />
 
           {/* Floating Zoom in/out overlay controls */}
-          <div className="absolute top-space-md right-space-md z-[500] pointer-events-auto">
+          <div className="absolute top-4 right-4 z-[500] pointer-events-auto">
             <MapZoomButtons />
           </div>
 
@@ -261,14 +260,14 @@ export default function Map({
               <Popup className="custom-popup" closeButton={false}>
                 <div className="p-3 bg-surface-container-high rounded-xl border border-outline-variant/30 text-on-surface min-w-[240px] shadow-2xl">
                   <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-outline-variant/20">
-                    <span className="font-bold font-headline-sm text-sm text-on-surface flex items-center gap-1.5">
+                    <span className="font-bold text-sm text-on-surface flex items-center gap-1.5">
                       <span className={`w-2 h-2 rounded-full ${zone.severity === 'CRITICAL' ? 'bg-error animate-ping' : 'bg-primary'}`}></span>
                       {zone.name || zone.zone}
                     </span>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                       zone.severity === 'CRITICAL' ? 'bg-error text-white' : 'bg-primary/20 text-primary'
                     }`}>
-                      {Math.round((zone.severity_score || 0.86) * 100)}% {zone.severity || 'Status'}
+                      {zone.severity || 'Status'}
                     </span>
                   </div>
                   <p className="text-xs text-on-surface-variant mb-2">
@@ -281,13 +280,20 @@ export default function Map({
                     </div>
                     <div className="bg-surface-container p-1 rounded">
                       <span className="text-on-surface-variant block">Rain</span>
-                      <span className="text-primary font-bold">{zone.rain || '78 mm/h'}</span>
+                      <span className="text-primary font-bold">{zone.rain || '82.5 mm/h'}</span>
                     </div>
                     <div className="bg-surface-container p-1 rounded">
                       <span className="text-on-surface-variant block">Reports</span>
-                      <span className="text-secondary font-bold">{zone.reports || 14}</span>
+                      <span className="text-secondary font-bold">{zone.reports || 19}</span>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => onSelectZone(zone)}
+                    className="w-full mt-2 py-1 px-2 rounded bg-primary text-on-primary text-[11px] font-bold hover:bg-primary/90 transition-colors text-center cursor-pointer"
+                  >
+                    Inspect Evidence &rarr;
+                  </button>
                 </div>
               </Popup>
             </Marker>
@@ -296,13 +302,13 @@ export default function Map({
       </div>
 
       {/* Bottom Bar: Operational Telemetry Status */}
-      <div className="relative z-[500] px-space-xs flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant pointer-events-none">
-        <div className="flex items-center gap-2 bg-surface-container-high/90 backdrop-blur-md px-2 py-1 rounded-md border border-outline-variant/20">
-          <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
-          <span className="text-on-surface font-medium">All 41 telemetry nodes operational</span>
+      <div className="relative z-[500] px-1 flex items-center justify-between text-xs text-on-surface-variant pointer-events-none">
+        <div className="flex items-center gap-1.5 bg-surface-container-high/95 backdrop-blur-md px-2.5 py-1 rounded-lg border border-outline-variant/25 shadow-sm">
+          <span className="material-symbols-outlined text-[15px] text-tertiary">check_circle</span>
+          <span className="text-on-surface font-medium">GIS Multi-Stream Telemetry Active</span>
         </div>
-        <div className="bg-surface-container-high/90 backdrop-blur-md px-2 py-1 rounded-md border border-outline-variant/20 text-on-surface-variant">
-          Leaflet GIS Engine • Real-Time Geo Fusion
+        <div className="hidden sm:block bg-surface-container-high/95 backdrop-blur-md px-2.5 py-1 rounded-lg border border-outline-variant/25 text-[11px] shadow-sm">
+          OpenStreetMap &bull; Delhi Geo-Corridor Grid
         </div>
       </div>
     </div>

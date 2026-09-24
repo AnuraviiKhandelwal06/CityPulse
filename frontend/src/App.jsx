@@ -1,21 +1,96 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from './theme/ThemeProvider';
 import Header from './components/Header';
-import AiCityBrief from './components/AiCityBrief';
-import CriticalAlertBanner from './components/CriticalAlertBanner';
-import CityVitalsPanel from './components/CityVitalsPanel';
-import ActiveIncidentPanel from './components/ActiveIncidentPanel';
-import Map from './components/Map';
-import ReplayScrubber from './components/ReplayScrubber';
-import DataSourcesPanel from './components/DataSourcesPanel';
-import TimelinePanel from './components/TimelinePanel';
+import OverviewPage from './pages/OverviewPage';
+import CityMapPage from './pages/CityMapPage';
+import IncidentsPage from './pages/IncidentsPage';
+import PredictionsPage from './pages/PredictionsPage';
+import ReplayPage from './pages/ReplayPage';
+import WhatIfSimulatorPage from './pages/WhatIfSimulatorPage';
+import CityZonesPage from './pages/CityZonesPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import AskCityPulsePage from './pages/AskCityPulsePage';
+import DataHubPage from './pages/DataHubPage';
+import ResponseCenterPage from './pages/ResponseCenterPage';
 import WhyPanel from './components/WhyPanel';
 
+class PageErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('[CityPulse PageErrorBoundary caught error]:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 rounded-2xl bg-surface-container-low border border-error/30 flex flex-col items-center justify-center text-center gap-3 my-8">
+          <span className="text-4xl">⚠️</span>
+          <h2 className="text-lg font-bold text-on-surface">Page Render Error Encountered</h2>
+          <p className="text-xs text-on-surface-variant max-w-lg leading-relaxed">
+            A client-side error occurred while rendering this page component.
+          </p>
+          <div className="p-3 bg-surface-container rounded-xl font-mono text-[11px] text-error border border-error/20 max-w-md text-left">
+            <strong>Error:</strong> {this.state.error?.message || String(this.state.error)}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              if (this.props.onReset) this.props.onReset();
+            }}
+            className="mt-2 px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-semibold cursor-pointer"
+          >
+            &larr; Return to Overview
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function DashboardContent() {
-  const [activeTab, setActiveTab] = useState('overview');
+  // Navigation / Routing state (synced with hash, supporting both #/page and #page)
+  const getPageFromHash = () => {
+    let hash = window.location.hash.replace(/^[#/]+/, '').toLowerCase();
+    if (hash === 'what-if' || hash === 'whatif') hash = 'simulate';
+    if (hash === 'prediction') hash = 'predictions';
+    if (hash === 'incident') hash = 'incidents';
+    if (hash === 'zone') hash = 'zones';
+    if (hash === 'data-hub') hash = 'data';
+    if (hash === 'response-center') hash = 'response';
+
+    const validPages = [
+      'overview', 'map', 'incidents', 'predictions', 'replay',
+      'simulate', 'zones', 'analytics', 'ask', 'data', 'response'
+    ];
+    return validPages.includes(hash) ? hash : 'overview';
+  };
+
+  const [currentPage, setCurrentPage] = useState(getPageFromHash);
   const [isWhyOpen, setIsWhyOpen] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simStepLabel, setSimStepLabel] = useState('');
+
+  // Handle Hash Navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentPage(getPageFromHash());
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const handleNavigate = (page) => {
+    window.location.hash = `#/${page}`;
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Live state from API or fallbacks
   const [vitals, setVitals] = useState(null);
@@ -25,6 +100,7 @@ export function DashboardContent() {
   const [timeline, setTimeline] = useState([]);
   const [currentAlert, setCurrentAlert] = useState(null);
   const [citySummary, setCitySummary] = useState(null);
+  const [prediction, setPrediction] = useState(null);
   const [liveStatus, setLiveStatus] = useState('All systems live (synced)');
 
   // Replay scrubber state
@@ -35,7 +111,7 @@ export function DashboardContent() {
   // Helper fetch function supporting both direct port and Vite proxy
   const apiFetch = async (endpoint, options = {}) => {
     try {
-      const res = await fetch(`http://localhost:8000${endpoint}`, options);
+      const res = await fetch(`http://127.0.0.1:8000${endpoint}`, options);
       if (res.ok) return res;
     } catch (e) {
       // Fallback via relative path (Vite dev proxy)
@@ -61,7 +137,18 @@ export function DashboardContent() {
         setCitySummary(sumData);
       }
 
-      // 3. Alerts
+      // 3. Predictive Risk Nowcast
+      try {
+        const predRes = await apiFetch('/api/prediction');
+        if (predRes.ok) {
+          const predData = await predRes.json();
+          setPrediction(predData);
+        }
+      } catch (e) {
+        // Fallback handled in component
+      }
+
+      // 4. Alerts
       const alertsRes = await apiFetch('/api/alerts');
       if (alertsRes.ok) {
         const alertsData = await alertsRes.json();
@@ -83,7 +170,7 @@ export function DashboardContent() {
             confidenceLabel: topAlert.confidence >= 0.85 ? 'High' : 'Moderate',
             waterDepth: (metricsData?.rainfall?.value || 0) > 50 ? '18–24 cm underpass accumulation' : '4–8 cm surface accumulation',
             vehicleSpeed: trafficItem?.value || `${metricsData?.traffic?.value || 88}% (${metricsData?.traffic?.status || 'Severe congestion'})`,
-            citizenReports: civicItem?.value || `${metricsData?.civicReports?.value || 14} flood reports`,
+            citizenReports: civicItem?.value || `${metricsData?.civicReports?.value || 19} flood reports`,
             rawAlert: topAlert
           });
         } else {
@@ -103,7 +190,7 @@ export function DashboardContent() {
         }
       }
 
-      // 4. Zones for map
+      // 5. Zones for map
       const zonesRes = await apiFetch('/api/zones');
       if (zonesRes.ok) {
         const zonesData = await zonesRes.json();
@@ -112,7 +199,7 @@ export function DashboardContent() {
         }
       }
 
-      // 5. Timeline
+      // 6. Timeline
       const timelineRes = await apiFetch('/api/timeline');
       if (timelineRes.ok) {
         const timelineData = await timelineRes.json();
@@ -121,7 +208,7 @@ export function DashboardContent() {
         }
       }
 
-      // 6. Data sources status (calculated dynamically)
+      // 7. Data sources status
       const simStatusRes = await apiFetch('/api/simulation/current');
       if (simStatusRes.ok) {
         const simStatus = await simStatusRes.json();
@@ -131,8 +218,8 @@ export function DashboardContent() {
             id: 'weather',
             name: 'Weather API (Open-Meteo)',
             status: 'Connected',
-            metricLabel: 'Precipitation Radar',
-            metricValue: metricsData?.rainfall ? `${metricsData.rainfall.value} ${metricsData.rainfall.unit} (${metricsData.rainfall.status})` : (step >= 1 ? '78.4 mm/h shower' : '1.2 mm/h clear'),
+            metricLabel: 'Precipitation',
+            metricValue: metricsData?.rainfall ? `${metricsData.rainfall.value} ${metricsData.rainfall.unit}` : (step >= 1 ? '82.5 mm/h' : '1.2 mm/h'),
             metricColor: step >= 1 ? 'text-primary' : 'text-on-surface',
             online: true,
           },
@@ -140,8 +227,8 @@ export function DashboardContent() {
             id: 'traffic',
             name: 'Traffic Sensors & Loops',
             status: 'Connected',
-            metricLabel: 'Malviya Ring Corridor',
-            metricValue: metricsData?.traffic ? `${metricsData.traffic.value}${metricsData.traffic.unit} (${metricsData.traffic.status})` : (step >= 2 ? '84% (Gridlock)' : '42% (Smooth)'),
+            metricLabel: 'Congestion',
+            metricValue: metricsData?.traffic ? `${metricsData.traffic.value}${metricsData.traffic.unit}` : (step >= 2 ? '88%' : '42%'),
             metricColor: step >= 2 ? 'text-error' : 'text-tertiary',
             online: true,
           },
@@ -149,8 +236,8 @@ export function DashboardContent() {
             id: 'incidents',
             name: 'Municipal 311 Reports',
             status: 'Connected',
-            metricLabel: 'Public Grievance Inflow',
-            metricValue: metricsData?.civicReports ? `${metricsData.civicReports.value} ${metricsData.civicReports.unit}` : (step >= 3 ? '14 active flood calls' : '0 active calls'),
+            metricLabel: 'Complaints',
+            metricValue: metricsData?.civicReports ? `${metricsData.civicReports.value} ${metricsData.civicReports.unit}` : (step >= 3 ? '19 reports' : '0 reports'),
             metricColor: step >= 3 ? 'text-secondary' : 'text-on-surface-variant',
             online: true,
           },
@@ -249,7 +336,8 @@ export function DashboardContent() {
       vitals,
       incident,
       currentAlert,
-      zones
+      zones,
+      predictiveRisk: prediction
     };
     const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -260,20 +348,11 @@ export function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-surface font-body-md text-on-surface antialiased">
-      {/* 1. Fixed Header */}
+    <div className="min-h-screen bg-surface font-body-md text-on-surface antialiased flex flex-col">
+      {/* 1. Universal Top Header with Navigation */}
       <Header
-        activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          if (tab === 'evidence') {
-            setIsWhyOpen(true);
-          }
-        }}
-        onOpenEvidence={() => setIsWhyOpen(true)}
-        criticalCount={currentAlert ? 1 : 0}
-        emergingCount={3}
-        normalCount={14}
+        activePage={currentPage}
+        onNavigate={handleNavigate}
         liveStatus={liveStatus}
         onSimulate={handleSimulateScenario}
         isSimulating={isSimulating}
@@ -281,97 +360,172 @@ export function DashboardContent() {
         onExport={handleExport}
       />
 
-      {/* 2. Main Body (pt-16 accounts for fixed header) */}
-      <main className="w-full pt-16 bg-surface min-h-screen">
-        <div className="flex flex-col w-full">
-          {/* AI City Brief Section (Compact, Grounded, Non-Causal with Confidence & Disclaimer) */}
-          <AiCityBrief
-            alert={currentAlert}
-            summary={citySummary}
-            onInspectEvidence={() => setIsWhyOpen(true)}
+      {/* 2. Main Page View Container */}
+      <main className="w-full pt-20 pb-12 px-4 md:px-8 max-w-7xl mx-auto flex-1 flex flex-col gap-6">
+        <PageErrorBoundary onReset={() => handleNavigate('overview')}>
+          {currentPage === 'overview' && (
+          <OverviewPage
+            vitals={vitals}
+            incident={incident}
+            zones={zones}
+            sources={sources}
+            timeline={timeline}
+            currentAlert={currentAlert}
+            citySummary={citySummary}
+            prediction={prediction}
+            isSimulating={isSimulating}
+            replayPlaying={replayPlaying}
+            replayElapsed={replayElapsed}
+            replaySpeed={replaySpeed}
+            onSimulate={handleSimulateScenario}
+            onTogglePlay={() => {
+              if (isSimulating) {
+                setIsSimulating(false);
+              } else {
+                handleSimulateScenario();
+              }
+            }}
+            onSpeedChange={(s) => setReplaySpeed(s)}
+            onSeek={handleSeek}
+            onReset={handleReset}
+            onStepTimeline={handleStepTimeline}
+            onOpenWhy={() => setIsWhyOpen(true)}
+            onNavigate={handleNavigate}
           />
+        )}
 
-          {/* 3-Column Workspace Grid */}
-          <div className="w-full px-margin-desktop py-space-sm grid grid-cols-1 xl:grid-cols-12 gap-gutter-desktop">
-            {/* Left Column: City Vitals & Active Incident Spotlight */}
-            <div className="xl:col-span-3 flex flex-col gap-space-md">
-              <CityVitalsPanel vitals={vitals} />
-              <ActiveIncidentPanel
-                incident={incident}
-                onOpenWhy={() => setIsWhyOpen(true)}
-                onBroadcast={() => alert('Civil Defense Alert broadcast dispatched to local authorities.')}
-                onReroute={() => alert('Dynamic traffic signal pre-emption active on Malviya Outer Corridors.')}
-              />
-            </div>
+        {currentPage === 'map' && (
+          <CityMapPage
+            zones={zones}
+            currentAlert={currentAlert}
+            incident={incident}
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
 
-            {/* Center Column: Live Map & Replay Scrubber */}
-            <div className="xl:col-span-6 flex flex-col gap-space-sm">
-              <Map
-                zones={zones}
-                onSelectZone={(z) => {
-                  if (z.severity === 'CRITICAL' || z.id === 'malviya-nagar') {
-                    setIsWhyOpen(true);
-                  }
-                }}
-              />
-              <ReplayScrubber
-                isPlaying={isSimulating || replayPlaying}
-                onTogglePlay={() => {
-                  if (isSimulating) {
-                    setIsSimulating(false);
-                  } else {
-                    handleSimulateScenario();
-                  }
-                }}
-                elapsedMinutes={replayElapsed}
-                totalMinutes={30}
-                speed={replaySpeed}
-                onSpeedChange={(s) => setReplaySpeed(s)}
-                onSeek={handleSeek}
-                onReset={handleReset}
-              />
-            </div>
+        {currentPage === 'incidents' && (
+          <IncidentsPage
+            incident={incident}
+            currentAlert={currentAlert}
+            vitals={vitals}
+            zones={zones}
+            currentStep={Math.min(4, Math.max(0, Math.round(replayElapsed / 5)))}
+            onOpenWhy={() => setIsWhyOpen(true)}
+            onNavigate={handleNavigate}
+            onSeek={handleSeek}
+          />
+        )}
 
-            {/* Right Column: Live Data Sources & Timeline of Events */}
-            <div className="xl:col-span-3 flex flex-col gap-space-md">
-              <DataSourcesPanel sources={sources} />
-              <TimelinePanel
-                events={timeline}
-                onStepBack={() => handleStepTimeline(-1)}
-                onStepForward={() => handleStepTimeline(1)}
-              />
-            </div>
-          </div>
-        </div>
+        {currentPage === 'predictions' && (
+          <PredictionsPage
+            currentStep={Math.min(4, Math.max(0, Math.round(replayElapsed / 5)))}
+            apiFetch={apiFetch}
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {currentPage === 'replay' && (
+          <ReplayPage
+            isSimulating={isSimulating}
+            replayPlaying={replayPlaying}
+            replayElapsed={replayElapsed}
+            replaySpeed={replaySpeed}
+            onTogglePlay={() => {
+              if (isSimulating) {
+                setIsSimulating(false);
+              } else {
+                handleSimulateScenario();
+              }
+            }}
+            onSpeedChange={(s) => setReplaySpeed(s)}
+            onSeek={handleSeek}
+            onReset={handleReset}
+            onStepTimeline={handleStepTimeline}
+            vitals={vitals}
+            currentAlert={currentAlert}
+            prediction={prediction}
+            timeline={timeline}
+          />
+        )}
+
+        {currentPage === 'simulate' && (
+          <WhatIfSimulatorPage
+            apiFetch={apiFetch}
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {currentPage === 'zones' && (
+          <CityZonesPage
+            zones={zones}
+            currentAlert={currentAlert}
+            vitals={vitals}
+            currentStep={Math.min(4, Math.max(0, Math.round(replayElapsed / 5)))}
+            apiFetch={apiFetch}
+            onNavigate={handleNavigate}
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
+
+        {currentPage === 'analytics' && (
+          <AnalyticsPage
+            apiFetch={apiFetch}
+            onNavigate={handleNavigate}
+            currentStep={Math.min(4, Math.max(0, Math.round(replayElapsed / 5)))}
+            zones={zones}
+            vitals={vitals}
+          />
+        )}
+
+        {currentPage === 'ask' && (
+          <AskCityPulsePage
+            apiFetch={apiFetch}
+            onNavigate={handleNavigate}
+            currentStep={Math.min(4, Math.max(0, Math.round(replayElapsed / 5)))}
+          />
+        )}
+
+        {currentPage === 'data' && (
+          <DataHubPage
+            apiFetch={apiFetch}
+            onNavigate={handleNavigate}
+            currentStep={Math.min(4, Math.max(0, Math.round(replayElapsed / 5)))}
+          />
+        )}
+
+        {currentPage === 'response' && (
+          <ResponseCenterPage
+            apiFetch={apiFetch}
+            onNavigate={handleNavigate}
+            currentStep={Math.min(4, Math.max(0, Math.round(replayElapsed / 5)))}
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
+        </PageErrorBoundary>
       </main>
 
       {/* Footer */}
-      <footer className="w-full bg-surface-container-lowest py-space-md border-t border-outline-variant/20 mt-space-lg">
-        <div className="w-full px-margin-desktop flex flex-col md:flex-row items-center justify-between gap-space-sm">
-          <div className="flex items-center gap-space-sm font-body-sm text-body-sm text-on-surface-variant">
-            <span className="font-semibold text-on-surface">CityPulse Operations</span>
-            <span>•</span>
-            <span className="text-tertiary flex items-center gap-1 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-              All telemetry feeds active
-            </span>
+      <footer className="w-full bg-surface-container-lowest py-4 border-t border-outline-variant/20">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-on-surface-variant">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-on-surface">CityPulse</span>
+            <span>&bull;</span>
+            <span>Municipal Situational Intelligence Platform</span>
+            <span>&bull;</span>
+            <span className="text-tertiary font-medium">Empirical Cross-Domain Fusion</span>
           </div>
-          <div className="font-body-sm text-body-sm text-on-surface-variant">
-            &copy; 2025 Municipal Situational Intelligence Platform • Powered by Cross-Domain Geo Fusion
+          <div className="italic text-[11px]">
+            Correlation detected; causation is not established.
           </div>
         </div>
       </footer>
 
-      {/* WHY Evidence Panel Modal */}
+      {/* Universal Evidence & Analysis Modal (Accessible anywhere via onOpenWhy) */}
       <WhyPanel
         isOpen={isWhyOpen}
-        onClose={() => {
-          setIsWhyOpen(false);
-          if (activeTab === 'evidence') {
-            setActiveTab('overview');
-          }
-        }}
+        onClose={() => setIsWhyOpen(false)}
         alert={currentAlert}
+        prediction={prediction}
       />
     </div>
   );

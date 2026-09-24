@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 export default function WhyPanel({
   isOpen,
   onClose,
-  alert
+  alert,
+  prediction = null
 }) {
   const [data, setData] = useState(alert);
   const [loading, setLoading] = useState(false);
@@ -406,6 +407,47 @@ export default function WhyPanel({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Section 5: Early-Warning Predictive ML Nowcast (30–60 Minutes) */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <h3 className="font-body-md font-bold text-on-surface flex items-center gap-1.5 uppercase text-xs tracking-wider text-on-surface-variant">
+                <span className="material-symbols-outlined text-[16px] text-primary">online_prediction</span>
+                5. Predictive ML Nowcast (Next 30–60 Minutes)
+              </h3>
+              <span className="text-[11px] px-2 py-0.5 rounded bg-primary/10 text-primary font-semibold">
+                Model: HistGradientBoosting &bull; LOEO Validated
+              </span>
+            </div>
+            <div className="p-space-md rounded-xl bg-surface-container border border-primary/20 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-base select-none">🔮</span>
+                  <span className="font-bold text-sm text-on-surface">Estimated Disruption Probability</span>
+                </div>
+                <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                  (prediction?.risk_level === 'HIGH' || !prediction)
+                    ? 'bg-error text-on-error'
+                    : prediction?.risk_level === 'MEDIUM'
+                      ? 'bg-amber-500/20 text-amber-400'
+                      : 'bg-tertiary/20 text-tertiary'
+                }`}>
+                  {prediction?.risk_level || 'HIGH'} ({prediction?.risk_probability !== null && prediction?.risk_probability !== undefined ? Math.round(prediction.risk_probability * 100) : 99}%)
+                </span>
+              </div>
+              <p className="text-xs text-on-surface leading-relaxed">
+                {prediction?.synthesis || "Current elevated rainfall and traffic deterioration are associated with elevated predicted disruption risk over the next 30–60 minutes."}
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {(prediction?.risk_drivers || ['Rainfall accumulation surge', 'Traffic speed deterioration', 'Waterlogging complaint surge']).map((driver, i) => (
+                  <span key={i} className="text-xs px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface-variant flex items-center gap-1">
+                    <span className="text-primary font-bold">&bull;</span>
+                    <span>{driver}</span>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>

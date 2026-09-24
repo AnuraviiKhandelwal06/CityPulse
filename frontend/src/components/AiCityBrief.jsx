@@ -10,86 +10,69 @@ export default function AiCityBrief({
     ? Math.round(alert.confidence * 100)
     : (summary?.confidence ? Math.round(summary.confidence * 100) : 95);
 
-  const briefText = alert?.explanation || summary?.summary ||
-    'All municipal telemetry streams (weather radar, arterial traffic loops, and 311 citizen grievance feeds) indicate nominal baseline operations across all monitored Delhi sectors. No anomalous spatiotemporal clusters detected.';
+  const isAiGenerated = Boolean(alert?.is_ai_generated || summary?.is_ai_generated);
+  const statusMessage = alert?.ai_status_message || summary?.ai_status_message ||
+    (!isAiGenerated ? "AI summary temporarily unavailable — showing evidence-based CityPulse summary." : null);
 
-  const zone = alert?.zone || summary?.zone || 'Malviya Nagar Underpass';
-  const spatialDist = alert?.spatial_overlap_km || 0.8;
-  const temporalWin = alert?.temporal_overlap_minutes || 20;
+  const briefText = isAlert
+    ? (alert?.explanation ||
+      "Heavy rainfall is coinciding with severe traffic congestion and increased waterlogging reports around Malviya Nagar Underpass. The signals occurred within the same time and geographic window, indicating a potential multi-domain disruption.")
+    : (summary?.summary ||
+      "All municipal telemetry streams (weather radar, arterial traffic loops, and 311 citizen grievance feeds) indicate nominal baseline operations across all monitored Delhi sectors. No anomalous spatiotemporal clusters detected.");
 
   return (
-    <div className="w-full px-margin-desktop py-space-xs bg-surface-container-lowest border-b border-outline-variant/15">
-      <div
-        className={`w-full p-space-md rounded-xl border transition-all duration-300 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md ${
-          isAlert
-            ? 'bg-error-container/15 border-error/40'
-            : 'bg-surface-container-low border-outline-variant/20'
-        }`}
-      >
-        {/* Left Side: Badge + Grounded Synthesis + Disclaimer */}
-        <div className="flex flex-col gap-2 flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* AI City Brief Pill */}
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/15 text-primary text-xs font-bold uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
-              <span>AI City Brief</span>
-            </div>
-
-            {/* Severity Pill */}
-            {isAlert ? (
-              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-error text-on-error text-xs font-bold uppercase tracking-wider animate-pulse">
-                <span className="material-symbols-outlined text-[14px]">warning</span>
-                <span>{alert.severity || 'CRITICAL'} DISRUPTION</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary/20 text-tertiary text-xs font-bold uppercase tracking-wider">
-                <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                <span>NOMINAL OPERATIONS</span>
-              </div>
-            )}
-
-            {/* Confidence Pill */}
-            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-primary"></span>
-              <span>{confidenceScore}% Confidence</span>
-            </div>
-
-            {/* Spatiotemporal Overlap Pill */}
-            {isAlert && (
-              <div className="hidden sm:flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-xs">
-                <span className="material-symbols-outlined text-[14px]">location_searching</span>
-                <span>Within {spatialDist} km &bull; {temporalWin} min window</span>
-              </div>
-            )}
-          </div>
-
-          {/* Synthesis Text */}
-          <p className="font-body-md text-on-surface leading-relaxed text-sm md:text-base">
-            {briefText}
-          </p>
-
-          {/* Non-Causal Legal / Scientific Disclaimer */}
-          <div className="flex items-center gap-1.5 text-xs text-on-surface-variant/90 font-medium">
-            <span className="material-symbols-outlined text-[15px] text-amber-500 shrink-0">info</span>
-            <span className="italic">
-              <strong>Correlation detected; causation is not established.</strong> Empirical cross-domain spatiotemporal coincidence across independent sensor streams.
+    <div className="bg-surface-container-low p-5 rounded-2xl border border-outline-variant/25 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4 h-full">
+      <div className="flex flex-col gap-3">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[20px]">auto_awesome</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant font-mono">
+              AI City Brief
             </span>
+            {isAiGenerated ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary font-mono font-semibold">
+                AI Generated
+              </span>
+            ) : (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-mono">
+                Evidence Engine
+              </span>
+            )}
           </div>
+          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface border border-outline-variant/20">
+            {confidenceScore}% confidence
+          </span>
         </div>
 
-        {/* Right Side: Inspect Evidence CTA Button */}
-        <div className="flex items-center gap-space-sm shrink-0 self-end lg:self-center">
-          <button
-            onClick={onInspectEvidence}
-            type="button"
-            className="py-2 px-space-md rounded-lg bg-primary text-on-primary font-body-sm font-semibold hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm cursor-pointer hover:shadow-md"
-            title="Inspect full statistical evidence, correlation, and formula breakdown"
-          >
-            <span className="material-symbols-outlined text-[18px]">psychology</span>
-            <span>Inspect Evidence</span>
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </button>
+        {/* Fallback notification when LLM is unavailable */}
+        {!isAiGenerated && statusMessage && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-600 dark:text-amber-400">
+            <span className="material-symbols-outlined text-[15px] shrink-0">info</span>
+            <span>{statusMessage}</span>
+          </div>
+        )}
+
+        {/* Human explanation text */}
+        <p className="text-sm text-on-surface leading-relaxed font-body-md">
+          "{briefText}"
+        </p>
+      </div>
+
+      {/* Footer with Disclaimer & CTA */}
+      <div className="pt-2 border-t border-outline-variant/15 flex flex-col gap-2">
+        <div className="flex items-center gap-1.5 text-xs text-on-surface-variant italic">
+          <span className="material-symbols-outlined text-[14px] text-amber-500 shrink-0">info</span>
+          <span>Correlation detected; causation is not established.</span>
         </div>
+        <button
+          type="button"
+          onClick={onInspectEvidence}
+          className="text-xs text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer self-start"
+        >
+          <span>View supporting evidence</span>
+          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+        </button>
       </div>
     </div>
   );

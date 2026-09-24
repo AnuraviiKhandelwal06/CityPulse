@@ -2,13 +2,9 @@ import React from 'react';
 import { useTheme } from '../theme/ThemeProvider';
 
 export default function Header({
-  activeTab = 'overview',
-  setActiveTab = () => {},
-  onOpenEvidence = () => {},
-  criticalCount = 1,
-  emergingCount = 3,
-  normalCount = 14,
-  liveStatus = 'All systems live (5s ago)',
+  activePage = 'overview',
+  onNavigate = () => {},
+  liveStatus = 'All systems live',
   onSimulate = () => {},
   isSimulating = false,
   simStepLabel = '',
@@ -16,137 +12,103 @@ export default function Header({
 }) {
   const { theme, toggleTheme } = useTheme();
 
+  const navItems = [
+    { id: 'overview', label: 'Overview', icon: 'dashboard' },
+    { id: 'map', label: 'City Map', icon: 'map' },
+    { id: 'incidents', label: 'Incidents', icon: 'warning' },
+    { id: 'predictions', label: 'Predictions', icon: 'online_prediction' },
+    { id: 'ask', label: 'Ask', icon: 'forum' },
+    { id: 'response', label: 'Response', icon: 'crisis_alert' },
+    { id: 'simulate', label: 'What-If', icon: 'tune' },
+    { id: 'replay', label: 'Replay', icon: 'replay' },
+    { id: 'zones', label: 'Zones', icon: 'location_city' },
+    { id: 'analytics', label: 'Analytics', icon: 'monitoring' },
+    { id: 'data', label: 'Data Hub', icon: 'hub' },
+  ];
+
   return (
-    <header className="fixed top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.4)] border-b border-outline-variant/20">
-      <div className="h-16 w-full px-margin-desktop flex items-center justify-between gap-space-lg">
+    <header className="fixed top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-sm border-b border-outline-variant/20">
+      <div className="h-16 w-full px-4 md:px-8 flex items-center justify-between gap-3">
         {/* Left: Branding & Status */}
-        <div className="flex items-center gap-space-lg">
-          <div className="flex items-center gap-space-sm cursor-pointer" onClick={() => setActiveTab('overview')}>
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[20px]">radar</span>
+        <div className="flex items-center gap-3 shrink-0">
+          <div
+            onClick={() => onNavigate('overview')}
+            className="flex items-center gap-2.5 cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center text-primary shadow-sm">
+              <span className="material-symbols-outlined text-[22px]">radar</span>
             </div>
             <div>
-              <span className="font-headline-sm text-headline-sm font-bold tracking-tight text-on-surface">CityPulse</span>
-              <span className="text-body-sm text-on-surface-variant block font-normal">Urban Situational Dashboard</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-surface-container-high border border-outline-variant/30 ml-2">
-              <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
-              <span className="font-body-sm text-body-sm text-on-surface font-medium">
-                {simStepLabel ? simStepLabel : liveStatus}
+              <span className="font-headline-sm text-base md:text-lg font-bold tracking-tight text-on-surface">
+                CityPulse
               </span>
             </div>
           </div>
 
-          <div className="hidden xl:flex items-center gap-space-xs">
-            <div
-              className={`flex items-center gap-1 px-space-sm py-1 rounded-full font-body-sm font-semibold transition-all ${
-                criticalCount > 0
-                  ? 'bg-error-container/40 text-error cursor-pointer'
-                  : 'bg-surface-container text-on-surface-variant'
-              }`}
-              onClick={() => {
-                if (criticalCount > 0) onOpenEvidence();
-              }}
-              title={criticalCount > 0 ? 'Click to inspect critical alert evidence' : 'No critical alerts'}
-            >
-              {criticalCount > 0 ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-error animate-ping"></span>
-                  <span>{criticalCount} Critical Alert</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                  <span>0 Critical</span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-1 px-space-sm py-1 rounded-full bg-primary/20 text-primary font-body-sm font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span>{emergingCount} Emerging</span>
-            </div>
-            <div className="flex items-center gap-1 px-space-sm py-1 rounded-full bg-tertiary-container/20 text-tertiary font-body-sm font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-              <span>{normalCount} Normal</span>
-            </div>
+          {/* Clean Single Status Indicator */}
+          <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high border border-outline-variant/25 ml-2 text-xs">
+            <span className={`w-2 h-2 rounded-full ${isSimulating ? 'bg-amber-400 animate-ping' : 'bg-tertiary animate-pulse'}`}></span>
+            <span className="font-medium text-on-surface">
+              {simStepLabel ? simStepLabel : liveStatus}
+            </span>
           </div>
         </div>
 
         {/* Center: Navigation Tabs */}
-        <nav className="hidden lg:flex items-center gap-space-xs">
-          <button
-            type="button"
-            onClick={() => setActiveTab('overview')}
-            className={`px-space-md py-1.5 rounded-lg font-body-md font-medium transition-colors cursor-pointer ${
-              activeTab === 'overview'
-                ? 'text-on-primary-container bg-primary-container shadow-sm'
-                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-            }`}
-          >
-            Overview &amp; Map
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('evidence');
-              onOpenEvidence();
-            }}
-            className={`px-space-md py-1.5 rounded-lg font-body-md font-medium transition-colors cursor-pointer ${
-              activeTab === 'evidence'
-                ? 'text-on-primary-container bg-primary-container shadow-sm'
-                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-            }`}
-          >
-            Incident Evidence
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('replay');
-              onSimulate();
-            }}
-            className={`px-space-md py-1.5 rounded-lg font-body-md font-medium transition-colors cursor-pointer ${
-              activeTab === 'replay'
-                ? 'text-on-primary-container bg-primary-container shadow-sm'
-                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-            }`}
-          >
-            Simulation Replay
-          </button>
+        <nav className="flex items-center gap-1 overflow-x-auto py-1">
+          {navItems.map((item) => {
+            const isActive = activePage === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onNavigate(item.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-body-sm font-semibold text-xs md:text-sm transition-all cursor-pointer whitespace-nowrap ${
+                  isActive
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Right: Actions, Theme Toggle, Profile */}
-        <div className="flex items-center gap-space-sm">
+        {/* Right: Actions, Export, Theme Toggle */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
-            className={`flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg font-body-sm font-medium transition-colors cursor-pointer shadow-sm ${
-              isSimulating
-                ? 'bg-error text-white animate-pulse'
-                : 'bg-primary text-on-primary hover:bg-primary/90'
-            }`}
             type="button"
             onClick={onSimulate}
-            title="Play the 5-stage demo scenario: baseline → rain → traffic → waterlogging → disruption"
+            className={`flex items-center gap-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-xl font-bold text-xs md:text-sm transition-all shadow-sm cursor-pointer ${
+              isSimulating
+                ? 'bg-amber-500 text-white animate-pulse'
+                : 'bg-primary text-on-primary hover:bg-primary/90 hover:shadow-md'
+            }`}
+            title="Play the 5-stage simulation scenario: baseline → rain → traffic → waterlogging → disruption"
           >
-            <span className={`material-symbols-outlined text-[16px] ${isSimulating ? 'animate-spin' : ''}`}>
+            <span className={`material-symbols-outlined text-[17px] ${isSimulating ? 'animate-spin' : ''}`}>
               {isSimulating ? 'sync' : 'play_circle'}
             </span>
-            <span>{isSimulating ? 'Simulating...' : 'Simulate Scenario'}</span>
+            <span className="hidden sm:inline">{isSimulating ? 'Simulating...' : 'Simulate'}</span>
           </button>
 
           <button
-            className="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm font-medium transition-colors cursor-pointer"
             type="button"
             onClick={onExport}
+            className="flex items-center gap-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs md:text-sm border border-outline-variant/30 transition-colors cursor-pointer"
+            title="Export JSON incident report"
           >
-            <span className="material-symbols-outlined text-[16px] text-on-surface-variant">ios_share</span>
-            <span className="hidden sm:inline">Export</span>
+            <span className="material-symbols-outlined text-[17px] text-on-surface-variant">ios_share</span>
+            <span className="hidden md:inline">Export</span>
           </button>
 
           {/* Theme Toggle Button */}
           <button
-            className="w-8 h-8 rounded-full bg-surface-container-high hover:bg-surface-bright flex items-center justify-center cursor-pointer transition-colors text-on-surface border border-outline-variant/30"
             type="button"
             onClick={toggleTheme}
+            className="w-9 h-9 rounded-xl bg-surface-container hover:bg-surface-container-high flex items-center justify-center cursor-pointer transition-colors text-on-surface border border-outline-variant/30"
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
@@ -154,10 +116,6 @@ export default function Header({
               {theme === 'dark' ? 'light_mode' : 'dark_mode'}
             </span>
           </button>
-
-          <div className="w-8 h-8 rounded-full bg-surface-container-high hover:bg-surface-bright flex items-center justify-center cursor-pointer transition-colors ml-1 border border-outline-variant/30">
-            <span className="material-symbols-outlined text-on-surface text-[18px]">person</span>
-          </div>
         </div>
       </div>
     </header>

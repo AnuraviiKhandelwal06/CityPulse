@@ -28,6 +28,8 @@ class DisruptionEvent(BaseModel):
     created_at: str
     explanation: Optional[str] = None
     summary_html: Optional[str] = None
+    is_ai_generated: bool = False
+    ai_status_message: Optional[str] = None
     evidence_breakdown: Optional[List[Dict[str, Any]]] = None
 
     # Calculated explanation & evidence fields

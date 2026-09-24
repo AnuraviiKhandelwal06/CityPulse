@@ -8,6 +8,11 @@ import state
 from api.events import router as events_router
 from api.alerts import router as alerts_router
 from api.zones import router as zones_router
+from api.prediction import router as prediction_router
+from api.analytics import router as analytics_router
+from api.ask import router as ask_router
+from api.data_hub import router as data_hub_router
+from api.response import router as response_router
 
 from ingestion.weather import fetch_real_weather, simulate_weather_scenario
 from ingestion.traffic import simulate_traffic
@@ -37,6 +42,11 @@ app.add_middleware(
 app.include_router(events_router)
 app.include_router(alerts_router)
 app.include_router(zones_router)
+app.include_router(prediction_router)
+app.include_router(analytics_router)
+app.include_router(ask_router)
+app.include_router(data_hub_router)
+app.include_router(response_router)
 
 anomaly_detector = AnomalyDetector(threshold=1.5)
 
@@ -135,6 +145,8 @@ def get_summary():
         return {
             "summary": alert.explanation,
             "summary_html": alert.summary_html,
+            "is_ai_generated": getattr(alert, "is_ai_generated", False),
+            "ai_status_message": getattr(alert, "ai_status_message", "AI summary temporarily unavailable — showing evidence-based CityPulse summary."),
             "zone": alert.zone,
             "severity": alert.severity,
             "confidence": alert.confidence,
@@ -151,6 +163,8 @@ def get_summary():
     return {
         "summary": msg,
         "summary_html": msg,
+        "is_ai_generated": False,
+        "ai_status_message": "Showing evidence-based CityPulse summary.",
         "zone": "Citywide",
         "severity": "LOW",
         "confidence": 0.95,
