@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.models.civic_data import CivicEvent
-from app.models.anamoly import Anomaly
+from app.models.anomaly import Anomaly
 from app.models.correlation import Correlation
 from app.models.evidence import Evidence
 from app.models.alert import Alert
@@ -22,13 +22,19 @@ class PersistenceService:
 
         for event in events:
 
-            existing = db.get(CivicEvent, event["id"])
+            existing = db.get(
+                CivicEvent,
+                event["id"],
+            )
 
             if existing:
                 continue
 
             timestamp = datetime.fromisoformat(
-                event["timestamp"].replace("Z", "+00:00")
+                event["timestamp"].replace(
+                    "Z",
+                    "+00:00",
+                )
             ).replace(tzinfo=None)
 
             record = CivicEvent(
@@ -57,9 +63,10 @@ class PersistenceService:
         analysis: dict,
     ) -> None:
 
-        alerts = analysis.get("alerts", {})
-
-        zone_alerts = alerts.get("zone_alerts", [])
+        zone_alerts = analysis.get(
+            "active_zone_alerts",
+            [],
+        )
 
         for alert_data in zone_alerts:
 
@@ -67,18 +74,26 @@ class PersistenceService:
 
             existing_alert = (
                 db.query(Alert)
-                .filter(Alert.alert_id == alert_id)
+                .filter(
+                    Alert.alert_id == alert_id
+                )
                 .first()
             )
 
             if existing_alert:
                 continue
 
+            # -------------------------
+            # Correlation
+            # -------------------------
+
             correlation = Correlation(
                 id=alert_id,
                 zone_id=alert_data["zone_id"],
                 alert_type="DISRUPTION_ALERT",
-                time_span_minutes=alert_data["time_span_minutes"],
+                time_span_minutes=alert_data[
+                    "time_span_minutes"
+                ],
                 event_types=json.dumps(
                     alert_data["event_types"]
                 ),
@@ -87,41 +102,75 @@ class PersistenceService:
 
             db.add(correlation)
 
+            # -------------------------
+            # Alert
+            # -------------------------
+
             alert = Alert(
                 alert_id=alert_id,
                 correlation_id=alert_id,
                 zone_id=alert_data["zone_id"],
                 zone_name=alert_data["zone_name"],
-                severity_score=alert_data["severity_score"],
-                severity_band=alert_data["severity_band"],
-                confidence_score=alert_data["confidence_score"],
+                severity_score=alert_data[
+                    "severity_score"
+                ],
+                severity_band=alert_data[
+                    "severity_band"
+                ],
+                confidence_score=alert_data[
+                    "confidence_score"
+                ],
                 summary=alert_data["summary"],
                 event_types=json.dumps(
                     alert_data["event_types"]
                 ),
-                time_span_minutes=alert_data["time_span_minutes"],
+                time_span_minutes=alert_data[
+                    "time_span_minutes"
+                ],
                 status="ACTIVE",
                 created_at=datetime.utcnow(),
             )
 
             db.add(alert)
 
-            for evidence_data in alert_data.get("evidence", []):
+            # -------------------------
+            # Evidence
+            # -------------------------
+
+            for evidence_data in alert_data.get(
+                "evidence",
+                [],
+            ):
 
                 timestamp = datetime.fromisoformat(
-                    evidence_data["timestamp"].replace("Z", "+00:00")
+                    evidence_data["timestamp"].replace(
+                        "Z",
+                        "+00:00",
+                    )
                 ).replace(tzinfo=None)
 
                 evidence = Evidence(
                     correlation_id=alert_id,
-                    event_id=evidence_data["event_id"],
-                    event_type=evidence_data["event_type"],
+                    event_id=evidence_data[
+                        "event_id"
+                    ],
+                    event_type=evidence_data[
+                        "event_type"
+                    ],
                     value=evidence_data["value"],
-                    baseline=evidence_data["baseline"],
-                    pct_change=evidence_data["pct_change"],
+                    baseline=evidence_data[
+                        "baseline"
+                    ],
+                    pct_change=evidence_data[
+                        "pct_change"
+                    ],
                     timestamp=timestamp,
-                    severity=evidence_data["severity"],
-                    zone_id=evidence_data["zone_id"],
+                    severity=evidence_data[
+                        "severity"
+                    ],
+                    zone_id=evidence_data[
+                        "zone_id"
+                    ],
                 )
 
                 db.add(evidence)

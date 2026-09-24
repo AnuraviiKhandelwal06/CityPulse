@@ -12,7 +12,8 @@ def replay(
         description="ISO-8601 timestamp",
     ),
 ):
-
     ml_service = request.app.state.ml_service
 
-    return ml_service.replay(timestamp)
+    result = ml_service.replay(timestamp)
+
+    return result

@@ -4,7 +4,9 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.db.database import create_tables
+from app.db.session import get_db
 from app.services.ml_engine_service import MLEngineService
+from app.services.persistence_service import PersistenceService
 
 from app.api import (
     events,
@@ -21,11 +23,17 @@ ml_service = MLEngineService(
     settings.ml_data_path
 )
 
+persistence_service = PersistenceService()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
     print("Starting CityPulse Backend...")
+
+    # -------------------------
+    # Create database tables
+    # -------------------------
 
     create_tables()
 
@@ -34,6 +42,11 @@ async def lifespan(app: FastAPI):
     )
 
     try:
+
+        # -------------------------
+        # Load ML pipeline
+        # -------------------------
+
         result = ml_service.load()
 
         print(
@@ -41,16 +54,50 @@ async def lifespan(app: FastAPI):
             result,
         )
 
+        # -------------------------
+        # Persist data
+        # -------------------------
+
+        db = next(get_db())
+
+        try:
+
+            events_saved = persistence_service.save_events(
+                db,
+                ml_service.raw_events,
+            )
+
+            analysis = ml_service.analyze()
+
+            persistence_service.save_analysis(
+                db,
+                analysis,
+            )
+
+            print(
+                f"Events saved to database: {events_saved}"
+            )
+
+            print(
+                "ML analysis saved to database."
+            )
+
+        finally:
+
+            db.close()
+
     except Exception as exc:
 
         print(
-            "ML Pipeline failed to load:",
+            "ML Pipeline / persistence failed:",
             exc,
         )
 
     yield
 
-    print("Shutting down CityPulse Backend...")
+    print(
+        "Shutting down CityPulse Backend..."
+    )
 
 
 app = FastAPI(
