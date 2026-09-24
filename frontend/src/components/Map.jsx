@@ -163,12 +163,9 @@ export default function Map({
     return true;
   });
 
-  // Dynamic Tile Layers that adapt to Light vs Dark theme
-  const tileUrl = theme === 'dark'
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-
-  const attribution = '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://openstreetmap.org">OSM</a>';
+  // Clean OpenStreetMap tiles without API key requirements or watermarks
+  const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
 
   return (
     <div className="w-full h-[640px] bg-surface-container-lowest rounded-xl border border-outline-variant/30 overflow-hidden relative shadow-xl flex flex-col justify-between p-space-md">

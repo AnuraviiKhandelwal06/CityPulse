@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from './theme/ThemeProvider';
 import Header from './components/Header';
+import AiCityBrief from './components/AiCityBrief';
 import CriticalAlertBanner from './components/CriticalAlertBanner';
 import CityVitalsPanel from './components/CityVitalsPanel';
 import ActiveIncidentPanel from './components/ActiveIncidentPanel';
@@ -23,7 +24,8 @@ export function DashboardContent() {
   const [sources, setSources] = useState(null);
   const [timeline, setTimeline] = useState([]);
   const [currentAlert, setCurrentAlert] = useState(null);
-  const [liveStatus, setLiveStatus] = useState('All systems live (5s ago)');
+  const [citySummary, setCitySummary] = useState(null);
+  const [liveStatus, setLiveStatus] = useState('All systems live (synced)');
 
   // Replay scrubber state
   const [replayPlaying, setReplayPlaying] = useState(false);
@@ -45,30 +47,43 @@ export function DashboardContent() {
   const fetchDashboardData = async () => {
     try {
       // 1. Metrics (City Vitals)
+      let metricsData = null;
       const metricsRes = await apiFetch('/api/metrics');
       if (metricsRes.ok) {
-        const metricsData = await metricsRes.json();
+        metricsData = await metricsRes.json();
         setVitals(metricsData);
       }
 
-      // 2. Alerts
+      // 2. Summary (AI City Brief)
+      const summaryRes = await apiFetch('/api/summary');
+      if (summaryRes.ok) {
+        const sumData = await summaryRes.json();
+        setCitySummary(sumData);
+      }
+
+      // 3. Alerts
       const alertsRes = await apiFetch('/api/alerts');
       if (alertsRes.ok) {
         const alertsData = await alertsRes.json();
         if (alertsData && alertsData.length > 0) {
           const topAlert = alertsData[0];
           setCurrentAlert(topAlert);
+
+          const weatherItem = topAlert.evidence_breakdown?.find(e => e.source === 'weather');
+          const trafficItem = topAlert.evidence_breakdown?.find(e => e.source === 'traffic' && e.event_type !== 'transit_delay');
+          const civicItem = topAlert.evidence_breakdown?.find(e => e.source === 'incident');
+
           setIncident({
             zone: topAlert.zone,
-            sector: `${topAlert.zone} • Correlated multi-source disruption`,
+            sector: `${topAlert.zone} • Spatiotemporal multi-stream correlation`,
             alertType: `${topAlert.severity} Alert`,
             severityScore: Math.round((topAlert.severity_score || 0.86) * 100),
             severityLabel: topAlert.severity,
             confidenceScore: Math.round((topAlert.confidence || 0.92) * 100),
             confidenceLabel: topAlert.confidence >= 0.85 ? 'High' : 'Moderate',
-            waterDepth: '18–24 cm at underpass',
-            vehicleSpeed: '4.2 km/h (Gridlock)',
-            citizenReports: '14 reports in 30 min',
+            waterDepth: (metricsData?.rainfall?.value || 0) > 50 ? '18–24 cm underpass accumulation' : '4–8 cm surface accumulation',
+            vehicleSpeed: trafficItem?.value || `${metricsData?.traffic?.value || 88}% (${metricsData?.traffic?.status || 'Severe congestion'})`,
+            citizenReports: civicItem?.value || `${metricsData?.civicReports?.value || 14} flood reports`,
             rawAlert: topAlert
           });
         } else {
@@ -81,14 +96,14 @@ export function DashboardContent() {
             severityLabel: 'Low',
             confidenceScore: 95,
             confidenceLabel: 'High',
-            waterDepth: 'Dry / No water accumulation',
-            vehicleSpeed: '46.5 km/h (Free Flow)',
-            citizenReports: '0 flood reports'
+            waterDepth: '0 cm (Dry / Clear flow)',
+            vehicleSpeed: `${metricsData?.traffic?.value || 42}% (${metricsData?.traffic?.status || 'Smooth flow'})`,
+            citizenReports: `${metricsData?.civicReports?.value || 0} active flood reports`
           });
         }
       }
 
-      // 3. Zones for map
+      // 4. Zones for map
       const zonesRes = await apiFetch('/api/zones');
       if (zonesRes.ok) {
         const zonesData = await zonesRes.json();
@@ -97,7 +112,7 @@ export function DashboardContent() {
         }
       }
 
-      // 4. Timeline
+      // 5. Timeline
       const timelineRes = await apiFetch('/api/timeline');
       if (timelineRes.ok) {
         const timelineData = await timelineRes.json();
@@ -106,7 +121,7 @@ export function DashboardContent() {
         }
       }
 
-      // 5. Data sources status
+      // 6. Data sources status (calculated dynamically)
       const simStatusRes = await apiFetch('/api/simulation/current');
       if (simStatusRes.ok) {
         const simStatus = await simStatusRes.json();
@@ -117,7 +132,7 @@ export function DashboardContent() {
             name: 'Weather API (Open-Meteo)',
             status: 'Connected',
             metricLabel: 'Precipitation Radar',
-            metricValue: step >= 1 ? '78.4 mm/h shower' : '1.2 mm/h clear',
+            metricValue: metricsData?.rainfall ? `${metricsData.rainfall.value} ${metricsData.rainfall.unit} (${metricsData.rainfall.status})` : (step >= 1 ? '78.4 mm/h shower' : '1.2 mm/h clear'),
             metricColor: step >= 1 ? 'text-primary' : 'text-on-surface',
             online: true,
           },
@@ -126,7 +141,7 @@ export function DashboardContent() {
             name: 'Traffic Sensors & Loops',
             status: 'Connected',
             metricLabel: 'Malviya Ring Corridor',
-            metricValue: step >= 2 ? '4.2 km/h (Gridlock)' : '46.5 km/h (Smooth)',
+            metricValue: metricsData?.traffic ? `${metricsData.traffic.value}${metricsData.traffic.unit} (${metricsData.traffic.status})` : (step >= 2 ? '84% (Gridlock)' : '42% (Smooth)'),
             metricColor: step >= 2 ? 'text-error' : 'text-tertiary',
             online: true,
           },
@@ -135,7 +150,7 @@ export function DashboardContent() {
             name: 'Municipal 311 Reports',
             status: 'Connected',
             metricLabel: 'Public Grievance Inflow',
-            metricValue: step >= 3 ? '14 active flood calls' : '0 active flood calls',
+            metricValue: metricsData?.civicReports ? `${metricsData.civicReports.value} ${metricsData.civicReports.unit}` : (step >= 3 ? '14 active flood calls' : '0 active calls'),
             metricColor: step >= 3 ? 'text-secondary' : 'text-on-surface-variant',
             online: true,
           },
@@ -269,9 +284,10 @@ export function DashboardContent() {
       {/* 2. Main Body (pt-16 accounts for fixed header) */}
       <main className="w-full pt-16 bg-surface min-h-screen">
         <div className="flex flex-col w-full">
-          {/* Critical Alert Banner (rendered when alert is active) */}
-          <CriticalAlertBanner
+          {/* AI City Brief Section (Compact, Grounded, Non-Causal with Confidence & Disclaimer) */}
+          <AiCityBrief
             alert={currentAlert}
+            summary={citySummary}
             onInspectEvidence={() => setIsWhyOpen(true)}
           />
 

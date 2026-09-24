@@ -21,6 +21,11 @@
   }
 }
 
+/* In dark mode, invert & tint OpenStreetMap tiles for clean dark-mode cartography with zero API keys or watermarks */
+html.dark .leaflet-tile-pane {
+  filter: brightness(0.7) invert(1) contrast(2.4) hue-rotate(195deg) saturate(0.35) brightness(0.75);
+}
+
 /* Hide scrollbar for neat aesthetic matching mockup */
 ::-webkit-scrollbar {
   display: none;

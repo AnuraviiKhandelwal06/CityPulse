@@ -20,8 +20,8 @@ class DisruptionEvent(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     zone: str
     severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
-    severity_score: float  # 0.0 - 1.0
-    confidence: float  # 0.0 - 1.0
+    severity_score: float  # 0.0 - 1.0 (calculated mathematically)
+    confidence: float  # 0.0 - 1.0 (calculated mathematically)
     contributing_events: List[str]  # list of UnifiedEvent ids
     spatial_overlap_km: float
     temporal_overlap_minutes: float
@@ -29,6 +29,16 @@ class DisruptionEvent(BaseModel):
     explanation: Optional[str] = None
     summary_html: Optional[str] = None
     evidence_breakdown: Optional[List[Dict[str, Any]]] = None
+
+    # Calculated explanation & evidence fields
+    temporal_correlation_text: Optional[str] = None
+    spatial_correlation_text: Optional[str] = None
+    weather_anomaly_text: Optional[str] = None
+    traffic_anomaly_text: Optional[str] = None
+    civic_anomaly_text: Optional[str] = None
+    severity_calculation_text: Optional[str] = None
+    confidence_calculation_text: Optional[str] = None
+    non_causal_disclaimer: Optional[str] = "Correlation detected; causation is not established."
 
 class ZoneStatus(BaseModel):
     id: str

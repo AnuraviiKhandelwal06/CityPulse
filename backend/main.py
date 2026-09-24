@@ -129,21 +129,35 @@ def get_timeline():
 
 @app.get("/api/summary")
 def get_summary():
-    alert = state.get_active_alert()
+    step = state.get_current_step()
+    alert = state.get_active_alert(step)
     if alert:
         return {
             "summary": alert.explanation,
             "summary_html": alert.summary_html,
             "zone": alert.zone,
             "severity": alert.severity,
-            "confidence": alert.confidence
+            "confidence": alert.confidence,
+            "disclaimer": "Correlation detected; causation is not established.",
+            "spatial_overlap_km": alert.spatial_overlap_km,
+            "temporal_overlap_minutes": alert.temporal_overlap_minutes,
+            "step": step
         }
+    analytics = state.compute_step_analytics(step)
+    if step == 1:
+        msg = f"Emerging localized precipitation detected around Malviya Nagar ({analytics['rain_val']:.1f} mm/h). Traffic flow and civic complaint volumes remain within standard operational bounds."
+    else:
+        msg = "All municipal systems and sensor streams indicate normal baseline operations across all monitored Delhi sectors. No anomalous spatiotemporal clusters detected."
     return {
-        "summary": "All municipal systems report normal operations across tracked zones.",
-        "summary_html": "All municipal systems report normal operations across tracked zones.",
+        "summary": msg,
+        "summary_html": msg,
         "zone": "Citywide",
         "severity": "LOW",
-        "confidence": 0.95
+        "confidence": 0.95,
+        "disclaimer": "Correlation detected; causation is not established.",
+        "spatial_overlap_km": 0.0,
+        "temporal_overlap_minutes": 0.0,
+        "step": step
     }
 
 @app.get("/api/simulation/current")

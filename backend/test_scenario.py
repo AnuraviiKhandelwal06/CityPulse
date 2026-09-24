@@ -8,12 +8,13 @@ def test_flow():
     alerts = requests.get("http://127.0.0.1:8000/api/alerts").json()
     print("Alerts after reset (should be 0):", len(alerts))
 
-    print("\n--- 2. Starting simulation scenario (t+0 to t+20) ---")
-    res = requests.post("http://127.0.0.1:8000/api/simulation/start")
-    print("Sim start status:", res.json())
+    print("\n--- 2. Setting simulation step to 4 (t+20m Disruption) ---")
+    res = requests.post("http://127.0.0.1:8000/api/simulation/set-step?step=4")
+    print("Sim step 4 status:", res.json())
 
     alerts = requests.get("http://127.0.0.1:8000/api/alerts").json()
     print("Alerts count:", len(alerts))
+    assert len(alerts) > 0, "Expected alert at step 4"
     top = alerts[0]
     print(f"Top Alert: {top['zone']}")
     print(f"Severity: {top['severity']} (Score: {top['severity_score']})")
