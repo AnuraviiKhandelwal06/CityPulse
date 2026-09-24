@@ -1,845 +1,295 @@
-🌆 CityPulse
+# 🌆 CityPulse
 
-Real-Time Civic Intelligence & Urban Situational Awareness Platform
+### Real-Time Civic Intelligence & Urban Situational Awareness
 
-CityPulse turns scattered civic signals into one understandable picture of what is happening, where it is happening, and why it matters.
+CityPulse is a real-time civic intelligence platform that brings together different city data sources to provide a single, understandable view of what is happening across an urban area.
 
-CityPulse is a real-time civic intelligence platform designed to fuse heterogeneous city data, detect emerging cross-domain disruptions, correlate events across time and geography, and explain the evidence behind those disruptions in plain language.
+Instead of looking at separate dashboards for weather, traffic, and civic incidents, CityPulse connects these signals to identify unusual patterns, detect potential disruptions, and explain why they matter.
 
-Instead of showing disconnected dashboards for weather, traffic, and civic complaints, CityPulse focuses on event understanding rather than event display.
+> **Event understanding, not event display.**
 
-🚨 The Problem
+---
 
-Modern cities generate large amounts of information through separate systems:
+## 🚨 Problem
 
-🌧️ Weather and rainfall
+Modern cities generate huge amounts of data from different systems:
 
-🚗 Traffic conditions
+* 🌧️ Weather
+* 🚗 Traffic
+* 🚌 Public transportation
+* 🚧 Civic incidents
+* 🏙️ Citizen complaints
+* ⚡ Infrastructure issues
 
-🚌 Transit delays
+However, this information is often scattered across independent systems.
 
-🚧 Civic incidents
-
-🏙️ Public complaints
-
-⚡ Infrastructure outages
-
-🌫️ Environmental signals
-
-These systems often operate independently.
-
-A potentially important situation may only become visible when several signals become abnormal at the same place and around the same time.
+A disruption may only become obvious when multiple signals change together.
 
 For example:
 
-Heavy Rainfall
-      ↓
-Traffic Congestion
-      ↓
-Waterlogging Reports
-      ↓
-Transit Delays
-      ↓
-Possible Civic Disruption
+**Heavy Rainfall → Traffic Congestion → Waterlogging → Transit Delays**
 
-CityPulse detects these relationships and presents them as a single, evidence-backed civic event.
+CityPulse identifies these cross-domain patterns and presents them as a unified civic situation.
 
-💡 What CityPulse Does
+---
 
-CityPulse:
+## 💡 Solution
 
-Ingests 3 distinct civic data streams
+CityPulse combines multiple civic signals and analyzes them across **time and location**.
 
-Normalizes heterogeneous data into a common event schema
+The platform can:
 
-Detects statistical anomalies in individual streams
+* Collect data from multiple civic sources
+* Normalize different types of data
+* Detect unusual activity
+* Identify temporal relationships
+* Identify geographic relationships
+* Calculate severity and confidence
+* Explain detected situations in plain language
+* Display everything through a real-time dashboard
+* Provide evidence behind important alerts
 
-Finds temporal correlations
+---
 
-Finds geographic correlations
+## 🔥 Key Features
 
-Calculates severity and confidence separately
+### 📊 Real-Time Civic Intelligence
 
-Generates grounded plain-language explanations
+Monitor multiple city signals from a single dashboard instead of switching between separate systems.
 
-Displays the situation through one live dashboard
+### 🔎 Anomaly Detection
 
-Provides an evidence-based WHY? view
+Identify unusual changes compared with normal activity.
 
-Supports a scripted historical/live replay for demonstrations
+For example:
 
-Core principle
-
-Correlation ≠ causation
-
-CityPulse never blindly claims that one event caused another.
-
-Instead of:
-
-❌ "Rain caused the traffic."
-
-It uses language such as:
-
-✅ "Heavy rainfall coincides with increased traffic congestion and waterlogging reports in the same area."
-
-This keeps the intelligence layer grounded and transparent.
-
-🎯 One-Line Pitch
-
-CityPulse is a real-time civic intelligence platform that fuses heterogeneous city data, detects emerging cross-domain disruptions, explains the evidence behind them, and gives residents and city operators a single view of what's happening and why it matters.
-
-🖥️ Dashboard
-
-The dashboard follows a three-column operational workspace:
-
-Area
-
-Purpose
-
-Left
-
-City Vitals + Active Incident Spotlight
-
-Center
-
-Live Map + Layer Controls + Replay
-
-Right
-
-Live Data Sources + Event Timeline
-
-The interface includes:
-
-Live system status
-
-Critical alert banner
-
-City-wide signal metrics
-
-Incident severity
-
-Evidence confidence
-
-Interactive map
-
-Data source health
-
-Event timeline
-
-Historical replay
-
-WHY / evidence breakdown
-
-Light / dark theme
-
-The supplied UI mockup defines the three-column workspace, fixed header, alert banner, map controls, data-source panel, timeline, and operational visual language. fileciteturn2file0L4-L11
-
-🔥 Key Features
-
-1. Multi-Source Civic Data Fusion
-
-CityPulse currently works with exactly three primary streams:
-
-🌦️ Weather
-
-Real weather data, using a service such as Open-Meteo.
-
-Example fields:
-
-temperature
-rainfall
-humidity
-wind
-weather_alert
-latitude
-longitude
-timestamp
-
-🚦 Traffic
-
-Simulated traffic stream designed for deterministic hackathon demonstrations.
-
-Example fields:
-
-congestion_level
-average_speed
-traffic_incidents
-road_blockage
-area
-latitude
-longitude
-timestamp
-
-🚧 Civic Incidents
-
-Simulated municipal incident stream.
-
-Supported incident types include:
-
-waterlogging
-road_damage
-power_outage
-noise_complaint
-garbage_complaint
-
-The final project specification explicitly uses one real weather API plus simulated traffic and civic incidents so the demo does not depend on unreliable third-party feeds. fileciteturn2file1L92-L105
-
-2. Unified Event Schema
-
-Every source is normalized into the same structure:
-
-{
-  "id": "uuid",
-  "source": "weather | traffic | incident",
-  "event_type": "rain | congestion | waterlogging",
-  "latitude": 26.85,
-  "longitude": 75.81,
-  "zone": "Zone 1",
-  "timestamp": "2026-09-24T10:15:00",
-  "value": 78.4,
-  "unit": "mm/h",
-  "severity": 0.72
-}
-
-The project specification defines this as the common normalized event shape used after ingestion. fileciteturn2file1L109-L123
-
-3. Anomaly Detection
-
-CityPulse maintains rolling baselines for each:
-
-source + event type + zone
-
-An event can be flagged when its current value significantly exceeds its baseline.
-
-Example:
-
+```text
 Normal Traffic     → 42%
 Current Traffic    → 84%
-                     ↑
-               Anomaly detected
-
-The v1 system intentionally uses explainable statistics rather than unnecessarily complex machine learning.
 
-4. Temporal + Geographic Correlation
+⚠️ Significant traffic anomaly detected
+```
 
-CityPulse combines two dimensions:
+### 🕒 Temporal Correlation
 
-Temporal correlation
+CityPulse looks for events that occur close together in time.
 
-10:05  Rainfall Spike
-10:10  Traffic Spike
-10:15  Waterlogging Reports
-10:20  Transit Delays
+```text
+10:05  Rainfall increases
+10:10  Traffic congestion increases
+10:15  Waterlogging reports increase
+10:20  Transit delays increase
+```
 
-Geographic correlation
+### 📍 Geographic Correlation
 
-Events must also occur geographically close to one another.
+Events are also compared based on their geographic proximity.
 
-The planned implementation uses a configurable temporal window and geographic distance threshold so that events that are close in time but far apart are not incorrectly merged. fileciteturn2file1L129-L152
+This prevents unrelated events from being incorrectly grouped simply because they happened at the same time.
 
-5. Severity vs Confidence
+### 🚨 Disruption Detection
 
-These are intentionally kept separate.
+When multiple abnormal signals overlap in both time and location, CityPulse can surface a potential civic disruption.
 
-Severity answers:
+### 🧠 Explainable Intelligence
 
-How serious is the situation?
+Every important alert can be backed by evidence such as:
 
-Confidence answers:
+* Contributing signals
+* Time overlap
+* Geographic overlap
+* Severity
+* Confidence
+* Source information
 
-How strong is the evidence for the detected relationship?
+### 🤖 AI-Powered Summaries
 
-Example severity bands:
+CityPulse can convert structured analytical results into simple human-readable explanations.
 
-0.0 – 0.3  LOW
-0.3 – 0.6  MEDIUM
-0.6 – 0.8  HIGH
-0.8 – 1.0  CRITICAL
+For example:
 
-The backend produces both values independently in a DisruptionEvent. fileciteturn2file1L145-L164
+> "Heavy rainfall coincides with increased traffic congestion and waterlogging reports in the same area."
 
-🧠 Intelligence Pipeline
+The AI acts as an explanation layer rather than inventing or determining the underlying data.
 
-┌──────────────────┐
-│  Civic Data      │
-│  Sources         │
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│   Ingestion      │
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│  Normalization   │
-│ UnifiedEvent     │
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│ Anomaly Detection│
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│ Temporal         │
-│ Correlation      │
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│ Geographic       │
-│ Correlation      │
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│ Severity +       │
-│ Confidence       │
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│ DisruptionEvent  │
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│ Grounded AI      │
-│ Summary          │
-└────────┬─────────┘
-         ↓
-┌──────────────────┐
-│ CityPulse        │
-│ Dashboard        │
-└──────────────────┘
+### 🗺️ Interactive City Map
 
-🤖 Grounded AI
+Visualize civic conditions geographically and identify areas experiencing abnormal activity.
 
-The AI layer is deliberately constrained.
+### ⏪ Historical Replay
 
-The LLM receives an already-computed structured disruption event and its contributing data.
+Follow how a civic disruption developed over time:
 
-It does not calculate the event itself.
+```text
+Normal
+  ↓
+Rainfall Spike
+  ↓
+Traffic Increase
+  ↓
+Waterlogging Reports
+  ↓
+Transit Delays
+  ↓
+Disruption Detected
+```
 
-It must:
+### 🌗 Light & Dark Mode
 
-Use only supplied facts
+A responsive interface designed for both operational monitoring and everyday use.
 
-Never invent numbers
+---
 
-Never fabricate sources
+## 🧠 Correlation ≠ Causation
 
-Avoid causal claims
+One of the core principles of CityPulse is responsible interpretation of civic data.
 
-Explain correlations in plain language
+CityPulse does not automatically claim:
 
-Produce concise summaries
+> ❌ "Rain caused the traffic."
 
-Example:
+Instead, it communicates evidence-based relationships:
 
-"Heavy rainfall coincides with increased traffic congestion, transit delays, and waterlogging reports in Malviya Nagar."
+> ✅ "Heavy rainfall coincides with increased traffic congestion and waterlogging reports in the same area."
 
-The final specification explicitly requires the LLM to receive only structured disruption information and to avoid invented numbers and causal language. fileciteturn2file1L169-L172
+This distinction helps prevent misleading conclusions from correlated data.
 
-🎬 Deterministic Demo Scenario
+---
 
-CityPulse includes a scripted simulator so the hackathon demonstration does not depend on unpredictable third-party data.
+## 🏗️ Technology
 
-T+00
-│
-├── All streams normal
-│
-T+05
-│
-├── Rainfall spikes
-│
-T+10
-│
-├── Traffic congestion spikes in the same zone
-│
-T+15
-│
-├── Waterlogging reports spike
-│
-T+20
-│
-├── Transit / traffic delay increases
-│
-▼
-CityPulse detects a possible civic disruption
-│
-▼
-WHY? evidence is displayed
+CityPulse is built using modern web and data technologies:
 
-This exact sequence is specified as the core demo scenario, with a compressed simulator timer so the anomaly can be triggered reliably during a presentation. fileciteturn2file1L35-L46
+* **React** — User interface
+* **Tailwind CSS** — Interface styling
+* **Python** — Data processing and backend services
+* **FastAPI** — API layer
+* **pandas / NumPy** — Data analysis
+* **scikit-learn** — Machine learning where appropriate
+* **SQLite** — Data storage
+* **Leaflet & OpenStreetMap** — Interactive mapping
+* **LLM APIs** — Grounded natural-language explanations
+* **Docker** — Containerization
 
-🔎 WHY? Evidence Panel
+---
 
-When an alert is opened, CityPulse can explain why it was generated.
+## 🌐 Data Sources
 
-Example:
+CityPulse is designed to work with heterogeneous civic data.
 
-Weather anomaly       ✓
-Traffic anomaly       ✓
-Civic incident spike  ✓
-Temporal overlap      ✓
-Geographic overlap    ✓
-Data completeness     ✓
+The current concept uses:
 
-Severity:   HIGH
-Confidence: 92%
+### 🌦️ Weather
 
-The WHY panel is designed to expose evidence, spatial overlap, temporal overlap, confidence, and the grounded AI explanation. fileciteturn2file1L196-L209
+Weather and rainfall information from public weather services.
 
-🗺️ Live Map
+### 🚦 Traffic
 
-The map is built using:
+Traffic conditions such as:
 
-Leaflet
+* Congestion
+* Average speed
+* Traffic incidents
+* Road blockages
 
-OpenStreetMap
+### 🚧 Civic Incidents
 
-Severity-based markers
+Examples include:
 
-Zone-level status
+* Waterlogging
+* Road damage
+* Power outages
+* Noise complaints
+* Garbage complaints
 
-Layer controls
+The platform can work with both real and simulated data, making it suitable for demonstrations and environments where live civic feeds are unavailable.
 
-Clickable event popups
+---
 
-Map layers include:
+## 🎯 Example Scenario
 
-All Layers
-Rainfall
-Traffic
-Civic 311
+Imagine a city experiencing heavy rainfall.
 
-The map replaces the mockup's placeholder visualization with real Leaflet markers driven by backend zone data. fileciteturn2file1L198-L206
+CityPulse observes:
 
-⏪ Historical Replay
+```text
+🌧️ Heavy rainfall
+       +
+🚗 Increased congestion
+       +
+🚧 Waterlogging reports
+       +
+🚌 Transit delays
+```
 
-The dashboard includes a replay concept for reconstructing how a disruption developed.
+The signals occur within the same area and a similar time window.
 
-00:00  Normal
-05:00  Rain Spike
-10:00  Traffic Slowdown
-15:00  Waterlogging Reports
-20:00  Critical Alert
+CityPulse identifies the pattern and presents:
 
-This allows users to understand not just what is happening now, but how the situation evolved.
+> 🚨 **Possible Civic Disruption Detected**
 
-🌗 Light / Dark Theme
+The user can then inspect the supporting evidence and understand how the situation developed.
 
-CityPulse supports both:
+---
 
-☀️ Light mode
+## 👥 Who Can Use CityPulse?
 
-🌙 Dark mode
+### 🏠 Residents
 
-The theme system uses CSS custom properties and a shared component system.
+Quickly understand what is happening around them.
 
-Theme preference is persisted using:
+### 🏙️ City Operations Teams
 
-localStorage.theme
+Monitor emerging disruptions across different civic systems.
 
-If no preference exists, the application respects:
+### 🚑 Emergency Responders
 
-prefers-color-scheme
+Get a consolidated view of developing situations.
 
-The implementation specification requires a React ThemeProvider, shared token names, persisted theme selection, and a header toggle. fileciteturn2file1L62-L73
+### 📰 Journalists
 
-🏗️ Tech Stack
+Understand how a city event developed and which signals contributed to it.
 
-Layer
+### 🏪 Local Businesses
 
-Technology
+Monitor disruptions that may affect accessibility, traffic, and nearby activity.
 
-Frontend
+---
 
-React
+## 🌍 Vision
 
-Styling
+CityPulse aims to move civic dashboards from:
 
-Tailwind CSS
+> **"Here are today's city statistics."**
 
-Backend
+to:
 
-Python + FastAPI
+> **"Here is what is happening in the city, where it is happening, how the situation is developing, and what evidence supports it."**
 
-Analytics
+By connecting previously isolated signals, CityPulse can help make complex urban information easier to understand and act upon.
 
-pandas, NumPy
+---
 
-ML
+## 🚀 Future Possibilities
 
-scikit-learn when genuinely needed
+CityPulse can be extended with:
 
-Database
+* Predictive disruption alerts
+* Citizen-facing notifications
+* Advanced anomaly detection
+* More civic data sources
+* Air-quality monitoring
+* Infrastructure monitoring
+* Event relationship graphs
+* Natural-language city queries
+* What-if simulations
+* Historical event comparison
+* Automated operational recommendations
 
-SQLite
+---
 
-Maps
+## ⭐ Project
 
-Leaflet + OpenStreetMap
+**CityPulse — Real-Time Civic Intelligence**
 
-Real-time
-
-Polling initially
-
-AI
-
-LLM API
-
-Deployment
-
-Docker + Docker Compose
-
-These technologies follow the final project specification. fileciteturn2file1L77-L87
-
-📁 Project Structure
-
-citypulse/
-│
-├── backend/
-│   ├── main.py
-│   │
-│   ├── ingestion/
-│   │   ├── weather.py
-│   │   ├── traffic.py
-│   │   └── incidents.py
-│   │
-│   ├── normalization/
-│   │   └── normalizer.py
-│   │
-│   ├── analytics/
-│   │   ├── anomaly.py
-│   │   ├── correlation.py
-│   │   ├── geo.py
-│   │   └── severity.py
-│   │
-│   ├── ai/
-│   │   └── summarizer.py
-│   │
-│   ├── models/
-│   │   └── events.py
-│   │
-│   └── api/
-│       ├── events.py
-│       ├── alerts.py
-│       └── zones.py
-│
-├── frontend/
-│   └── src/
-│       ├── theme/
-│       │   ├── ThemeProvider.jsx
-│       │   └── tokens.css
-│       │
-│       ├── components/
-│       │   ├── Header.jsx
-│       │   ├── CriticalAlertBanner.jsx
-│       │   ├── CityVitalsPanel.jsx
-│       │   ├── ActiveIncidentPanel.jsx
-│       │   ├── Map.jsx
-│       │   ├── ReplayScrubber.jsx
-│       │   ├── DataSourcesPanel.jsx
-│       │   ├── TimelinePanel.jsx
-│       │   └── WhyPanel.jsx
-│       │
-│       └── App.jsx
-│
-├── docker-compose.yml
-└── README.md
-
-The structure above follows the implementation scaffold in the final project specification. fileciteturn2file1L244-L285
-
-🔌 API
-
-The planned FastAPI interface exposes:
-
-Endpoint
-
-Purpose
-
-GET /api/events
-
-Normalized civic events
-
-GET /api/alerts
-
-Current disruption alerts
-
-GET /api/alerts/{id}
-
-Alert + complete evidence
-
-GET /api/zones
-
-Current zone statistics
-
-GET /api/metrics
-
-City-wide signal levels
-
-GET /api/timeline
-
-Historical events
-
-GET /api/summary
-
-Current AI-generated briefing
-
-The API should gracefully handle missing feeds, invalid data, zero alerts, simultaneous alerts, and delayed responses. fileciteturn2file1L176-L190
-
-🚦 MVP Priority
-
-P0 — Must Work
-
-3 civic data streams
-
-Data normalization
-
-Anomaly detection
-
-Temporal correlation
-
-Geographic correlation
-
-Severity scoring
-
-Confidence scoring
-
-Live dashboard
-
-Live map
-
-Alerts
-
-Plain-language summary
-
-Light / dark theme
-
-P1 — Make It Impressive
-
-WHY / evidence panel
-
-Event timeline
-
-Historical replay
-
-Advanced visual polish
-
-P2 — Only If Time Allows
-
-Ask CityPulse
-
-Predictive alerts
-
-Evidence graph
-
-What-if simulation
-
-The priority tiers are deliberately ordered so the project can still produce a complete MVP if hackathon time becomes limited. fileciteturn2file1L213-L222
-
-🛡️ Design Constraints
-
-CityPulse intentionally avoids unnecessary complexity.
-
-Not included in the core MVP
-
-Mobile application
-
-Kubernetes
-
-Microservices
-
-Blockchain
-
-IoT hardware integration
-
-Advanced multi-agent AI
-
-Large-scale ML infrastructure
-
-The focus is:
-
-Deep correlation + transparent evidence + clear civic explanation
-
-The project specification explicitly prioritizes correlation depth and explanation over adding more feeds or infrastructure. fileciteturn2file1L291-L297
-
-🧪 Demo Flow
-
-A typical demonstration follows this sequence:
-
-1. Everything is normal
-        ↓
-2. Simulate rainfall
-        ↓
-3. Traffic increases
-        ↓
-4. Waterlogging reports increase
-        ↓
-5. Transit delays appear
-        ↓
-6. CityPulse detects the cross-domain pattern
-        ↓
-7. Alert appears
-        ↓
-8. Open WHY? evidence
-        ↓
-9. Inspect spatial + temporal overlap
-        ↓
-10. Run historical replay
-        ↓
-11. Toggle light / dark mode
-
-Only performance claims supported by actual measured demo data should be presented. fileciteturn2file1L301-L309
-
-👥 Intended Users
-
-Residents
-
-Understand what is happening in their area without checking multiple sources.
-
-City Operations Teams
-
-Identify emerging multi-domain disruptions from one operational view.
-
-Emergency Responders
-
-Quickly understand where multiple civic signals are converging.
-
-Journalists
-
-Investigate developing city events using a timeline and evidence trail.
-
-Local Businesses
-
-Understand disruptions that may affect traffic, accessibility, or nearby activity.
-
-🚀 Getting Started
-
-Keep these commands synchronized with the actual repository configuration.
-
-1. Clone
-
-git clone <your-repository-url>
-cd citypulse
-
-2. Backend
-
-cd backend
-python -m venv .venv
-
-Windows
-
-.venv\Scripts\activate
-
-Linux / macOS
-
-source .venv/bin/activate
-
-Install dependencies:
-
-pip install -r requirements.txt
-
-Start FastAPI:
-
-uvicorn main:app --reload
-
-3. Frontend
-
-cd frontend
-npm install
-npm run dev
-
-4. Docker
-
-docker compose up --build
-
-🔐 Environment Variables
-
-Keep secrets outside the repository.
-
-Example:
-
-LLM_API_KEY=your_api_key
-
-Use a .env file locally and make sure it is included in .gitignore.
-
-Never commit API keys, passwords, tokens, or private credentials.
-
-📊 Example Disruption Event
-
-{
-  "id": "evt-001",
-  "zone": "Malviya Nagar",
-  "severity": "CRITICAL",
-  "severity_score": 0.86,
-  "confidence": 0.92,
-  "contributing_events": [
-    "weather-001",
-    "traffic-001",
-    "incident-001"
-  ],
-  "spatial_overlap_km": 1.4,
-  "temporal_overlap_minutes": 22,
-  "created_at": "2026-09-24T10:20:00"
-}
-
-This object becomes the structured foundation for the alert, evidence panel, and AI explanation.
-
-🧠 Why CityPulse Is Different
-
-Traditional civic dashboards often answer:
-
-"What is happening?"
-
-CityPulse aims to additionally answer:
-
-"Which signals are connected?"
-
-and:
-
-"What evidence supports that interpretation?"
-
-The key idea is:
-
-Event Display
-      ↓
-Event Detection
-      ↓
-Cross-Domain Correlation
-      ↓
-Evidence
-      ↓
-Human-Readable Understanding
-
-🏆 Hackathon Focus
-
-CityPulse is designed for a constrained, approximately 24-hour hackathon build.
-
-The implementation strategy prioritizes:
-
-A working end-to-end pipeline
-
-Deterministic demo data
-
-Explainable analytics
-
-Strong visualization
-
-Clear evidence
-
-Reliable degradation when data is unavailable
-
-The project deliberately prioritizes a smaller number of deeply connected feeds over a large number of disconnected integrations.
-
-📜 License
-
-Add your preferred license here, for example:
-
-MIT License
-
-👨‍💻 Team
-
-CityPulse — AmiHacks
-
-Built as a civic-tech prototype focused on real-time data fusion, anomaly detection, geospatial correlation, and explainable urban intelligence.
-
-⭐ If You Like the Project
-
-Give the repository a ⭐ and explore how CityPulse turns disconnected civic signals into an understandable city-wide picture.
+Built to explore how data fusion, geospatial analysis, anomaly detection, and AI-powered explanations can make urban information more understandable and actionable.
