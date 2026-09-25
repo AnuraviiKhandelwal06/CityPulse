@@ -83,6 +83,19 @@ def on_startup():
     database.clear_db()
     run_pipeline_step(step=4)
 
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "service": "CityPulse Civic Intelligence Engine",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
 @app.get("/api/metrics")
 def get_metrics():
     return state.get_step_metrics()
