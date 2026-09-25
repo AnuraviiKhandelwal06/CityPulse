@@ -16,12 +16,23 @@ export default function WhyPanel({
       setLoading(true);
       // Fetch latest alert evidence from backend if not provided directly
       const fetchAlert = async () => {
+        const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
         try {
-          let res = await fetch('http://localhost:8000/api/alerts/active');
-          if (!res.ok) {
+          let res;
+          if (apiBase) {
+            try {
+              res = await fetch(`${apiBase}/api/alerts/active`);
+            } catch (err) {}
+          }
+          if (!res || !res.ok) {
+            try {
+              res = await fetch('http://127.0.0.1:8000/api/alerts/active');
+            } catch (err) {}
+          }
+          if (!res || !res.ok) {
             res = await fetch('/api/alerts/active');
           }
-          if (res.ok) {
+          if (res && res.ok) {
             const result = await res.json();
             setData(result);
           }

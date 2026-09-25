@@ -108,13 +108,22 @@ export function DashboardContent() {
   const [replayElapsed, setReplayElapsed] = useState(20);
   const [replaySpeed, setReplaySpeed] = useState(1.0);
 
-  // Helper fetch function supporting both direct port and Vite proxy
+  // Helper fetch function supporting VITE_API_URL, direct local port, and relative/proxy
   const apiFetch = async (endpoint, options = {}) => {
+    const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+    if (apiBase) {
+      try {
+        const res = await fetch(`${apiBase}${endpoint}`, options);
+        if (res.ok) return res;
+      } catch (e) {
+        // Fallback to local or relative path if remote fails
+      }
+    }
     try {
       const res = await fetch(`http://127.0.0.1:8000${endpoint}`, options);
       if (res.ok) return res;
     } catch (e) {
-      // Fallback via relative path (Vite dev proxy)
+      // Fallback via relative path (Vite dev proxy or Vercel rewrite)
     }
     return fetch(endpoint, options);
   };
