@@ -1,0 +1,32 @@
+@import './theme/tokens.css';
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior: none;
+  }
+  main > :first-child {
+    margin-top: 0 !important;
+  }
+  main > :last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* In dark mode, invert & tint OpenStreetMap tiles for clean dark-mode cartography with zero API keys or watermarks */
+html.dark .leaflet-tile-pane {
+  filter: brightness(0.7) invert(1) contrast(2.4) hue-rotate(195deg) saturate(0.35) brightness(0.75);
+}
+
+/* Hide scrollbar for neat aesthetic matching mockup */
+::-webkit-scrollbar {
+  display: none;
+}

@@ -288,6 +288,76 @@ CityPulse can be extended with:
 
 ---
 
+## 🛠️ Quickstart Guide
+
+### 1. Prerequisites
+- Python 3.11+
+- Node.js 18+ and npm
+- (Optional) Docker & Docker Compose
+
+### 2. Local Setup
+
+#### Backend (FastAPI)
+```bash
+cd backend
+python -m venv venv
+# On Windows:
+.\venv\Scripts\activate
+# On Linux/macOS:
+source venv/bin/activate
+
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+Backend API will be available at `http://localhost:8000` (docs at `http://localhost:8000/docs`).
+
+#### Frontend (React + Vite + Tailwind CSS + Leaflet)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
+### 3. Docker Deployment
+```bash
+docker compose up --build
+```
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+
+---
+
+## ⚙️ Architecture & Data Pipeline
+
+```
+[Open-Meteo Weather API]   [Simulated Traffic Stream]   [Simulated 311 Complaints]
+           │                           │                           │
+           └───────────────────────────┼───────────────────────────┘
+                                       ▼
+                         Normalization Layer (UnifiedEvent)
+                                       │
+                                       ▼
+                       Baseline & Anomaly Detection
+                                       │
+                                       ▼
+                  Temporal Correlation (±30m Window)
+                                       │
+                                       ▼
+                   Geographic Correlation (< 2km Haversine)
+                                       │
+                                       ▼
+              Severity Scoring + Confidence Estimation (Kept Distinct)
+                                       │
+                                       ▼
+                Grounded Plain-Language Synthesis (Non-Causal)
+                                       │
+                                       ▼
+        FastAPI Endpoints ──► Real-Time React Dashboard (Leaflet + MD3)
+```
+
+---
+
 ## ⭐ Project
 
 **CityPulse — Real-Time Civic Intelligence**
