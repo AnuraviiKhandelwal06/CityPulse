@@ -42,7 +42,7 @@ def _get_grounded_fallback_answer(question: str, step: int, analytics: Dict[str,
     zone_name = alert.zone if alert else "Malviya Nagar"
     alert_active = alert is not None and alert.severity in ["CRITICAL", "HIGH", "MEDIUM"]
     sev_score = int((alert.severity_score if alert else analytics.get("severity_score", 0.1)) * 100)
-    risk_prob = int((pred.get("risk_probability", 0.0)) * 100)
+    risk_prob = int((pred.get("risk_probability") or 0.0) * 100)
     risk_level = pred.get("risk_level", "LOW")
 
     # Signals dictionary
@@ -203,7 +203,7 @@ def ask_citypulse(req: AskRequest):
         - Vehicle Speed: {analytics.get('raw_t', {}).get('average_speed', 46.5 if step == 0 else 4.2)} km/h
         - Civic 311 Waterlogging Complaints: {analytics.get('civic_val', 0)} reports
         - Transit Delay: +{analytics.get('delay_val', 0)} minutes
-        - ML Nowcast Risk Level: {pred.get('risk_level', 'LOW')} ({round(pred.get('risk_probability', 0.0)*100)}% probability)
+        - ML Nowcast Risk Level: {pred.get('risk_level', 'LOW')} ({round((pred.get('risk_probability') or 0.0)*100)}% probability)
         - Disruption Severity Score: {int(analytics.get('severity_score', 0.1)*100)}%
         - Monitored Zones Count: {len(zones)}
 
@@ -250,7 +250,7 @@ def ask_citypulse(req: AskRequest):
                                 "weather": f"{analytics.get('rain_val', 0.0):.1f} mm/h precipitation",
                                 "traffic": f"{int(analytics.get('cong_val', 38))}% congestion",
                                 "civic": f"{int(analytics.get('civic_val', 0))} 311 reports",
-                                "prediction": f"{pred.get('risk_level', 'LOW')} ({round(pred.get('risk_probability', 0.0)*100)}% nowcast)"
+                                "prediction": f"{pred.get('risk_level', 'LOW')} ({round((pred.get('risk_probability') or 0.0)*100)}% nowcast)"
                             }
                             return AskResponse(
                                 question=question,
