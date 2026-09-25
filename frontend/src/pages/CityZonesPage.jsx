@@ -16,6 +16,7 @@ export default function CityZonesPage({
   const [sortBy, setSortBy] = useState('RISK'); // 'RISK' | 'INCIDENTS' | 'TRAFFIC' | 'NAME'
   const [zonePrediction, setZonePrediction] = useState(null);
   const [loadingPrediction, setLoadingPrediction] = useState(false);
+  const [rawEvents, setRawEvents] = useState([]);
 
   // Safe fetch helper
   const safeFetch = async (url) => {
@@ -97,8 +98,6 @@ export default function CityZonesPage({
     fetchZonePred();
     return () => { isMounted = false; };
   }, [selectedZoneId, currentStep, activeZone?.name]);
-
-  const [rawEvents, setRawEvents] = useState([]);
 
   // Fetch events for active corridor if available
   useEffect(() => {

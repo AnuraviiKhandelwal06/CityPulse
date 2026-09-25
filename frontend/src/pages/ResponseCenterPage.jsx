@@ -91,11 +91,11 @@ export default function ResponseCenterPage({
               <span className="material-symbols-outlined text-primary text-2xl">crisis_alert</span>
               <h1 className="text-xl md:text-2xl font-bold text-on-surface">Response Center</h1>
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary border border-primary/20">
-                Decision Support
+                Simulation / Decision Support
               </span>
             </div>
             <p className="text-xs md:text-sm text-on-surface-variant max-w-2xl leading-relaxed">
-              Synthesizes real-time situation intelligence into simulated municipal countermeasures. Evaluate tactical broadcasts, monitor adjacent corridors, verify multi-stream evidence, and simulate arterial traffic rerouting deltas.
+              Synthesizes real-time situation intelligence into simulated municipal countermeasures. Evaluate tactical broadcasts, monitor adjacent corridors, verify multi-stream evidence, and simulate arterial traffic rerouting deltas. All actions function strictly as decision support simulation; no live infrastructure commands are transmitted.
             </p>
           </div>
 
@@ -230,6 +230,21 @@ export default function ResponseCenterPage({
       </div>
 
       {/* 3. Four Simulated Tactical Response Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+        <div>
+          <h2 className="text-base md:text-lg font-bold text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary">smart_toy</span>
+            <span>Simulated Tactical Response Actions</span>
+          </h2>
+          <p className="text-xs text-on-surface-variant mt-0.5">
+            Decision-support sandbox actions. Select an action below to evaluate projected impact without affecting live systems.
+          </p>
+        </div>
+        <span className="px-2.5 py-0.5 rounded text-[11px] font-mono text-on-surface-variant bg-surface-container border border-outline-variant/20 self-start sm:self-auto">
+          Sandbox Simulation Mode
+        </span>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Action 1: Broadcast Civic Alert */}
         <div className="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-5 shadow-sm flex flex-col justify-between gap-4">
@@ -240,7 +255,7 @@ export default function ResponseCenterPage({
               </div>
               <div>
                 <h3 className="text-sm font-bold text-on-surface">1. Broadcast Civic Advisory</h3>
-                <span className="text-[11px] text-on-surface-variant">Public Warning & Variable Message Signs</span>
+                <span className="text-[11px] text-on-surface-variant">Public Warning & Variable Message Signs (Simulated)</span>
               </div>
             </div>
             <p className="text-xs text-on-surface leading-relaxed">
@@ -255,7 +270,7 @@ export default function ResponseCenterPage({
             className="w-full py-2.5 px-4 rounded-xl bg-primary text-on-primary font-bold text-xs hover:bg-primary/90 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">send</span>
-            <span>Dispatch Broadcast Alert</span>
+            <span>Simulate Broadcast Dispatch</span>
           </button>
         </div>
 
@@ -283,7 +298,7 @@ export default function ResponseCenterPage({
             className="w-full py-2.5 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-on-surface font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px] text-tertiary">visibility</span>
-            <span>Elevate Nearby Corridor Watch</span>
+            <span>Simulate Nearby Corridor Watch</span>
           </button>
         </div>
 
